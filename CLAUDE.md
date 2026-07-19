@@ -48,6 +48,12 @@ Verification commands: prefer the PowerShell tool. The Bash tool swallows stdout
 - **Grid markup exists twice**: server-rendered in `web/_swatch_cell.html` and
   client-rendered in `frontend/src/alpine/grid.js`. Keep the two in step.
 - **Images**: any new `ImageField` should call `resize_in_place` in `save()`.
+- **Vite integration is hand-rolled**, not `django-vite`: `web/templatetags/vite.py`.
+  `VITE_DEV_MODE=True` → `settings.VITE_DEV_SERVER` → the tag loads from
+  `localhost:5173` with HMR; otherwise it reads the build manifest.
+  **Gotcha**: `base` in `vite.config.js` applies to the dev server too, so it's `/` when
+  serving and `/static/dist/` only when building. If you make `base` unconditional
+  again, the dev URLs 404 and the page silently renders unstyled.
 - **Polish CRUD lives in the web UI**, not just admin (`web/forms.py:PolishForm`).
   Brand and collection can be created inline from that form — a fresh install has no
   brands, so a plain dropdown would make the first polish unaddable. Keep that path

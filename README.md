@@ -58,6 +58,12 @@ VITE_DEV_MODE=True poetry run python manage.py runserver 8800
 Otherwise `npm run watch` rebuilds into `web/static/dist/` on save. Phone testing needs
 built assets — the dev-server URL is hardcoded to `localhost`.
 
+The Vite integration is a small hand-rolled template tag
+([web/templatetags/vite.py](web/templatetags/vite.py)) rather than `django-vite`: one
+entry point, no framework refresh plugin, so the dependency wasn't earning its keep.
+There's no `hot` file — dev mode is driven purely by `VITE_DEV_MODE`. If it's on and
+Vite isn't running, the browser console says so.
+
 ## Screens
 
 | Route | Purpose |

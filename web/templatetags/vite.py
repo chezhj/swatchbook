@@ -33,9 +33,17 @@ def _manifest():
 def vite_asset(entry="src/main.js"):
     """Emit the <script>/<link> tags for a Vite entry point."""
     if getattr(settings, "VITE_DEV_SERVER", False):
+        # Note the URLs are server-root relative: vite.config.js sets base to '/' when
+        # serving and '/static/dist/' only when building. If those two drift apart the
+        # dev server 404s and the page renders unstyled.
+        # The onerror turns "blank page, no idea why" into an actionable message when
+        # VITE_DEV_MODE is on but nothing is listening on 5173.
         return mark_safe(  # noqa: S308 - fixed, non-user content
             f'<script type="module" src="{DEV_SERVER}/@vite/client"></script>'
-            f'<script type="module" src="{DEV_SERVER}/{entry}"></script>'
+            f'<script type="module" src="{DEV_SERVER}/{entry}" '
+            f"onerror=\"console.error('Vite dev server unreachable at {DEV_SERVER} — "
+            f"start it with: cd frontend \\u0026\\u0026 npm run dev, "
+            f'or unset VITE_DEV_MODE to use built assets.\')"></script>'
         )
 
     manifest = _manifest()
