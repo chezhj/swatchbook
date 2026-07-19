@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Collection · Swatchbook{% endblock %}
+
+{% block content %}
+<div x-data="collectionGrid({{ total_count }})">
+
+  <div class="topbar">
+    <div>
+      <div class="sub" x-text="`${resultCount} in collection`">{{ total_count }} in collection</div>
+      <h2>Collection</h2>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button type="button" class="icon-btn" @click="$refs.search.focus()" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+      <button type="button" class="icon-btn" @click="sheetOpen = true" aria-label="Filter and sort">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="field" style="margin-bottom:10px;">
+    <input type="search" x-ref="search" x-model="search" placeholder="Search by name, brand or code…" aria-label="Search polishes">
+  </div>
+
+  <template x-if="activeFilterCount > 0">
+    <div class="chiprow">
+      <button type="button" class="chip on" @click="clearAll()">
+        <span x-text="`${activeFilterCount} filter(s) · clear`"></span>
+      </button>
+    </div>
+  </template>
+
+  <p x-show="error" x-text="error" class="empty" style="color:var(--pink);"></p>
+
+  {# Server-rendered first paint. Replaced by the Alpine grid once a filter changes. #}
+  <div class="grid3" x-show="results === null">
+    {% for polish in polishes %}
+      {% include "web/_swatch_cell.html" %}
+    {% empty %}
+      <p class="empty" style="grid-column:1/-1;">
+        Nothing here yet. Add polishes in <a href="/admin/catalog/polish/add/" class="holo-text">the admin</a>.
+      </p>
+    {% endfor %}
+  </div>
+
+  <div class="grid3" x-show="results !== null" x-cloak>
+    <template x-for="polish in (results || [])" :key="polish.id">
+      <a class="swatch-cell" :href="polish.detail_url">
+        <div style="position:relative; width:100%;">
+          <span class="code" x-text="polish.catalog_code"></span>
+          <div :class="swatchClasses(polish)" :style="`background: ${polish.hex_color};`"></div>
+        </div>
+        <div class="name" x-text="polish.name"></div>
+        <div class="brand" x-text="polish.brand_name"></div>
+      </a>
+    </template>
+    <template x-if="results !== null && results.length === 0">
+      <p class="empty" style="grid-column:1/-1;">No polishes match those filters.</p>
+    </template>
+  </div>
+
+  {# ---------- SCR-02: filter & sort sheet ---------- #}
+  <div x-show="sheetOpen" x-cloak
+       style="position:fixed; inset:0; background:var(--ink); z-index:60; overflow-y:auto;"
+       @keydown.escape.window="sheetOpen = false">
+    <div class="shell">
+      <div class="topbar">
+        <h2>Filter &amp; sort</h2>
+        <button type="button" class="icon-btn" @click="sheetOpen = false" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="sub">Formula</div>
+      <div class="chiprow">
+        {% for formula in formulas %}
+          <button type="button" class="chip" :class="{ on: isOn('formulas', '{{ formula.name|escapejs }}') }"
+                  @click="toggle('formulas', '{{ formula.name|escapejs }}')">{{ formula.name }}</button>
+        {% endfor %}
+      </div>
+
+      <div class="sub">Color</div>
+      <div class="chiprow">
+        {% for color in colors %}
+          <button type="button" class="chip" :class="{ on: isOn('colors', '{{ color.name|escapejs }}') }"
+                  @click="toggle('colors', '{{ color.name|escapejs }}')">
+            <span class="dot" style="background: {% if color.hex_color %}{{ color.hex_color }}{% else %}conic-gradient(#d9772f,#d9b23c,#4c7a5e,#1f6e6e,#2e4a8f,#6a4c93,#c2447a){% endif %};"></span>{{ color.name }}
+          </button>
+        {% endfor %}
+      </div>
+
+      <div class="sub">Sort by</div>
+      <div class="chiprow">
+        <button type="button" class="chip" :class="{ on: sort === '-last_used' }" @click="setSort('-last_used')">Last used</button>
+        <button type="button" class="chip" :class="{ on: sort === 'name' }" @click="setSort('name')">Name</button>
+        <button type="button" class="chip" :class="{ on: sort === 'brand' }" @click="setSort('brand')">Brand</button>
+        <button type="button" class="chip" :class="{ on: sort === '-created_at' }" @click="setSort('-created_at')">Recently added</button>
+      </div>
+
+      <div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
+        <button type="button" class="btn holo" @click="sheetOpen = false"
+                x-text="loading ? 'Loading…' : `Show ${resultCount} results`">Show results</button>
+        <button type="button" class="btn ghost" @click="clearAll()">Clear all</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

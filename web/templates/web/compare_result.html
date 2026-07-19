@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Compare · Swatchbook{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <a href="{% url 'compare_picker' %}" class="icon-btn" aria-label="Back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l-7 7 7 7"/></svg>
+  </a>
+  <h2>Compare</h2>
+  <span style="width:34px;"></span>
+</div>
+
+{% if not left %}
+  <p class="empty">Pick two polishes from the <a href="{% url 'compare_picker' %}" class="holo-text">compare picker</a>.</p>
+{% else %}
+
+<div class="comparecols">
+  {% comment %}
+  Left column is always the bottle as catalogued. Right column prefers a photographed
+  mani from the log — that two-up (in stock vs. as worn) is the point of the screen —
+  and falls back to the bottle swatch when the polish has never been logged.
+  {% endcomment %}
+  <div class="comparecol">
+    <div class="lbl">In collection</div>
+    <div class="bottle swatch {% for c in left.finish_classes %}{{ c }} {% endfor %}{% if left.is_rainbow %}is-rainbow{% endif %}"
+         style="background: {{ left.hex_color }}; border-radius:8px 8px 4px 4px;">
+      <span class="cap"></span>
+    </div>
+    <div style="text-align:center;">
+      <div class="detail-name" style="font-size:15px;">{{ left.name }}</div>
+      <div class="detail-brand" style="font-size:9px;">{{ left.brand.name }}</div>
+    </div>
+  </div>
+
+  {% if right %}
+  <div class="comparecol">
+    <div class="lbl">{% if right_entry and right_entry.primary_photo %}From log{% else %}In collection{% endif %}</div>
+    {% if right_entry and right_entry.primary_photo %}
+      <div class="photo-box"><img src="{{ right_entry.primary_photo.image.url }}" alt="{{ right_entry.title }}"></div>
+      <div style="text-align:center;">
+        <div class="detail-name" style="font-size:15px;">{{ right_entry.title }}</div>
+        <div class="detail-brand" style="font-size:9px;">Worn {{ right_entry.date_worn|date:"j M Y" }}</div>
+      </div>
+    {% else %}
+      <div class="bottle swatch {% for c in right.finish_classes %}{{ c }} {% endfor %}{% if right.is_rainbow %}is-rainbow{% endif %}"
+           style="background: {{ right.hex_color }}; border-radius:8px 8px 4px 4px;">
+        <span class="cap"></span>
+      </div>
+      <div style="text-align:center;">
+        <div class="detail-name" style="font-size:15px;">{{ right.name }}</div>
+        <div class="detail-brand" style="font-size:9px;">{{ right.brand.name }}</div>
+      </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="comparetable">
+  <div class="row"><span>Brand</span>
+    <b>{{ left.brand.name }}{% if right %} · {{ right.brand.name }}{% endif %}</b></div>
+  <div class="row"><span>Formula</span>
+    <b>{% for f in left.formulas.all %}{{ f.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}{% if right %}
+       · {% for f in right.formulas.all %}{{ f.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}{% endif %}</b></div>
+  <div class="row"><span>Color</span>
+    <b>{% for c in left.colors.all %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}{% if right %}
+       · {% for c in right.colors.all %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}{% endif %}</b></div>
+  <div class="row"><span>Collection</span>
+    <b>{{ left.collection.name|default:"—" }}{% if right %} · {{ right.collection.name|default:"—" }}{% endif %}</b></div>
+  <div class="row"><span>Code</span>
+    <b class="mono">{{ left.catalog_code }}{% if right %} · {{ right.catalog_code }}{% endif %}</b></div>
+</div>
+
+<div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
+  {% for polish in selected %}
+    <a class="btn ghost" href="{% url 'polish_detail' polish.pk %}">Open {{ polish.name }}</a>
+  {% endfor %}
+</div>
+
+{% endif %}
+{% endblock %}

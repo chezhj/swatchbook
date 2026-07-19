@@ -1,0 +1,163 @@
+// Swatch rendering — the signature element. The finish overlays are layered
+// pseudo-element gradients, which is why this stays hand-written SCSS rather than
+// Tailwind utilities. Classes (.f-holo, .f-glitter, ...) are produced by
+// Formula.css_class on the server, so the vocabulary stays the single source of truth.
+
+.swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--swatch-radius);
+  position: relative;
+  box-shadow:
+    inset 0 -7px 14px rgba(0, 0, 0, 0.4),
+    inset 0 5px 9px rgba(255, 255, 255, 0.16),
+    0 6px 14px -6px rgba(0, 0, 0, 0.6);
+
+  // Top-left gloss highlight, on every swatch.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 42%);
+  }
+
+  &.f-glitter::before,
+  &.f-flakie::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    mix-blend-mode: screen;
+    background-image:
+      radial-gradient(circle at 22% 28%, #fff 0, transparent 2px),
+      radial-gradient(circle at 62% 18%, #fff 0, transparent 1.6px),
+      radial-gradient(circle at 78% 55%, #fff 0, transparent 2px),
+      radial-gradient(circle at 34% 68%, #ffe9a8 0, transparent 1.6px),
+      radial-gradient(circle at 55% 48%, #fff 0, transparent 1.4px),
+      radial-gradient(circle at 15% 78%, #ffe9a8 0, transparent 1.8px),
+      radial-gradient(circle at 70% 82%, #fff 0, transparent 1.6px),
+      radial-gradient(circle at 88% 30%, #fff 0, transparent 1.4px);
+  }
+
+  &.f-holo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0.55;
+    mix-blend-mode: color-dodge;
+    background: conic-gradient(from 200deg, var(--cyan), var(--pink), var(--gold), var(--cyan));
+  }
+
+  &.f-chrome::before,
+  &.f-metallic::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 62%);
+  }
+
+  &.f-shimmer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0.35;
+    mix-blend-mode: screen;
+    background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.8), transparent 60%);
+  }
+
+  &.f-jelly {
+    filter: saturate(1.25);
+    &::after {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 50%);
+    }
+  }
+
+  &.f-magnetic::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.45) 0%,
+      transparent 35%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 65%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
+  }
+
+  // Multi-colour polishes: applied when the polish is tagged Rainbow.
+  &.is-rainbow {
+    background: conic-gradient(
+      from 180deg,
+      #d9772f, #d9b23c, #4c7a5e, #1f6e6e, #2e4a8f, #6a4c93, #c2447a, #b3283d, #d9772f
+    ) !important;
+  }
+}
+
+.swatch-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+
+  .code {
+    position: absolute;
+    top: -4px;
+    left: 8%;
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--mauve);
+    background: var(--surface);
+    padding: 1px 4px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+
+  .name {
+    font-size: 11px;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .brand {
+    font-size: 8.5px;
+    font-family: var(--font-mono);
+    color: var(--mauve-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &.selected .swatch {
+    box-shadow:
+      inset 0 -7px 14px rgba(0, 0, 0, 0.4),
+      inset 0 5px 9px rgba(255, 255, 255, 0.16),
+      0 0 0 3px var(--surface),
+      0 0 0 5px var(--pink);
+  }
+
+  .check {
+    position: absolute;
+    bottom: 2px;
+    right: 2%;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--holo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--ink);
+    font-weight: 700;
+  }
+}

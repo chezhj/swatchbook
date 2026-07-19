@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Log · Swatchbook{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="sub">{{ total_count }} entr{{ total_count|pluralize:"y,ies" }}</div>
+    <h2>Log</h2>
+  </div>
+  <a href="{% url 'log_create' %}" class="icon-btn" aria-label="New log entry">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+  </a>
+</div>
+
+<div class="chiprow">
+  <a class="chip {% if request.GET.sort != 'date_worn' %}on{% endif %}" href="?sort=-date_worn">Newest first</a>
+  <a class="chip {% if request.GET.sort == 'date_worn' %}on{% endif %}" href="?sort=date_worn">Oldest first</a>
+</div>
+
+{% for entry in entries %}
+  <a class="logrow" href="{% url 'log_detail' entry.pk %}">
+    <div class="thumb">
+      {% if entry.primary_photo %}<img src="{{ entry.primary_photo.image.url }}" alt="">{% else %}<div class="streak"></div>{% endif %}
+    </div>
+    <div class="logmeta" style="flex:1;">
+      <div class="n">{{ entry.title }}</div>
+      <div class="date">{{ entry.date_worn|date:"d M Y"|upper }}</div>
+    </div>
+    <span style="color:var(--mauve-dim);">›</span>
+  </a>
+{% empty %}
+  <p class="empty">No entries yet. <a href="{% url 'log_create' %}" class="holo-text">Log your first mani →</a></p>
+{% endfor %}
+
+{% if is_paginated %}
+  <div class="chiprow" style="margin-top:16px; justify-content:center;">
+    {% if page_obj.has_previous %}<a class="chip" href="?page={{ page_obj.previous_page_number }}">← Newer</a>{% endif %}
+    <span class="chip">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="chip" href="?page={{ page_obj.next_page_number }}">Older →</a>{% endif %}
+  </div>
+{% endif %}
+{% endblock %}

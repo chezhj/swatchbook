@@ -1,0 +1,49 @@
+@use 'tailwindcss';
+
+@use 'tokens';
+@use 'swatch';
+@use 'components';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: radial-gradient(ellipse at 20% -10%, #241f30 0%, var(--ink) 55%);
+  background-attachment: fixed;
+  color: var(--bone);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+// Alpine sets this until it initialises; without it, x-show elements flash on load.
+[x-cloak] { display: none !important; }
+
+.mono { font-family: var(--font-mono); }
+
+.holo-text {
+  background: var(--holo);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+// Respect the OS setting; the swatch effects are all static, so there is little to
+// disable, but transitions and any future animation should honour it.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

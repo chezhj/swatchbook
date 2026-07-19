@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ polish.name }} · Swatchbook{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <a href="{% url 'collection' %}" class="icon-btn" aria-label="Back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l-7 7 7 7"/></svg>
+  </a>
+  <span class="mono" style="font-size:10px; color:var(--mauve-dim);">{{ polish.catalog_code }}</span>
+  <a href="/admin/catalog/polish/{{ polish.pk }}/change/" class="icon-btn" aria-label="Edit in admin">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10-10-4-4L4 16v4z"/></svg>
+  </a>
+</div>
+
+{% if polish.primary_photo %}
+  <img src="{{ polish.primary_photo.image.url }}" alt="{{ polish.name }}"
+       style="width:148px; height:148px; object-fit:cover; border-radius:var(--swatch-radius); display:block; margin:10px auto 16px;">
+{% else %}
+  <div class="hero-swatch swatch {% for c in polish.finish_classes %}{{ c }} {% endfor %}{% if polish.is_rainbow %}is-rainbow{% endif %}"
+       style="background: {{ polish.hex_color }};"></div>
+{% endif %}
+
+<div class="detail-name">{{ polish.name }}</div>
+<div class="detail-brand">{{ polish.brand.name }}</div>
+{% if polish.collection %}
+  <div class="detail-collection">
+    {{ polish.collection.name }}{% if polish.collection.year %} ({{ polish.collection.year }}){% endif %}
+  </div>
+{% endif %}
+
+{% if not polish.in_collection %}
+  <div style="text-align:center; margin-top:8px;"><span class="phase">no longer owned</span></div>
+{% endif %}
+
+<div class="chiprow" style="justify-content:center; margin-top:14px;">
+  {% for formula in polish.formulas.all %}<span class="pill">{{ formula.name }}</span>{% endfor %}
+  {% for color in polish.colors.all %}<span class="pill">{{ color.name }}</span>{% endfor %}
+</div>
+
+{% if polish.tags.all %}
+  <div class="chiprow" style="justify-content:center;">
+    {% for tag in polish.tags.all %}<span class="chip">{{ tag.name }}</span>{% endfor %}
+  </div>
+{% endif %}
+
+{% if polish.description %}
+  <p class="desc" style="margin-top:6px;">{{ polish.description|linebreaksbr }}</p>
+{% endif %}
+
+{% if recent_entries %}
+  <div class="divider"></div>
+  <div class="sub">Worn</div>
+  {% for entry in recent_entries %}
+    <a class="logrow" href="{% url 'log_detail' entry.pk %}">
+      <div class="thumb">
+        {% if entry.primary_photo %}<img src="{{ entry.primary_photo.image.url }}" alt="">{% else %}<div class="streak"></div>{% endif %}
+      </div>
+      <div class="logmeta" style="flex:1;">
+        <div class="n">{{ entry.title }}</div>
+        <div class="date">{{ entry.date_worn|date:"d M Y"|upper }}</div>
+      </div>
+      <span style="color:var(--mauve-dim);">›</span>
+    </a>
+  {% endfor %}
+{% endif %}
+
+<div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
+  <a class="btn holo" href="{% url 'log_create' %}?polish={{ polish.pk }}">Log this polish</a>
+  {% if polish.webshop_link %}
+    <a class="btn ghost" href="{{ polish.webshop_link }}" target="_blank" rel="noopener noreferrer">View in webshop ↗</a>
+  {% endif %}
+  <a class="btn ghost" href="{% url 'compare_picker' %}?polish={{ polish.pk }}">Compare with…</a>
+</div>
+{% endblock %}

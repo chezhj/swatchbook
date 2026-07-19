@@ -1,0 +1,13 @@
+{% comment %}
+Server-rendered swatch cell. Mirrors the markup collectionGrid() produces client-side —
+keep the two in step when either changes.
+{% endcomment %}
+<a class="swatch-cell" href="{% url 'polish_detail' polish.pk %}">
+  <div style="position:relative; width:100%;">
+    <span class="code">{{ polish.catalog_code }}</span>
+    <div class="swatch {% for c in polish.finish_classes %}{{ c }} {% endfor %}{% if polish.is_rainbow %}is-rainbow{% endif %}"
+         style="background: {{ polish.hex_color }};"></div>
+  </div>
+  <div class="name">{{ polish.name }}</div>
+  <div class="brand">{{ polish.brand.name }}</div>
+</a>

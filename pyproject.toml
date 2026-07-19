@@ -1,0 +1,49 @@
+[project]
+name = "swatchbook"
+version = "0.1.0"
+description = "Personal nail polish catalog and wear log"
+authors = [{ name = "h", email = "h@vdwaal.net" }]
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "django (>=5.1,<6.0)",
+    "djangorestframework (>=3.15,<4.0)",
+    "django-filter (>=25.1,<26.0)",
+    "pillow (>=11.0,<12.0)",
+    "django-environ (>=0.12,<1.0)",
+    "whitenoise (>=6.8,<7.0)",
+]
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3"
+pytest-django = "^4.9"
+ruff = "^0.9"
+black = "^25.1"
+django-debug-toolbar = "^5.0"
+pre-commit = "^4.1"
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+extend-exclude = "migrations"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+addopts = "-q"

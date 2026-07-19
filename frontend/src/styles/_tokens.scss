@@ -1,0 +1,23 @@
+// Design tokens lifted verbatim from doc/swatchbook-mockup-v2.html (spec section 6).
+:root {
+  --ink: #15131b;
+  --surface: #211e29;
+  --surface2: #2a2632;
+  --bone: #f4f0ea;
+  --mauve: #9c93a8;
+  --mauve-dim: #655d72;
+  --line: rgba(244, 240, 234, 0.09);
+
+  --cyan: #6fe7dd;
+  --pink: #e893d0;
+  --gold: #f5d77a;
+  --holo: linear-gradient(120deg, var(--cyan), var(--pink), var(--gold));
+
+  --swatch-radius: 22%;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui: 'Work Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --shell-max: 520px; // phone-width column, centred on desktop
+}

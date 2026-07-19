@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Compare · Swatchbook{% endblock %}
+
+{% block content %}
+<div x-data="compareSelection()">
+  <div class="topbar">
+    <div>
+      <div class="sub" x-text="`${selected.length} selected`">0 selected</div>
+      <h2>Select to compare</h2>
+    </div>
+    <a href="{% url 'collection' %}" class="icon-btn" aria-label="Cancel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </a>
+  </div>
+
+  <p class="sub" style="text-transform:none; letter-spacing:0;">Pick two swatches to compare side by side.</p>
+
+  <div class="grid3">
+    {% for polish in polishes %}
+      <button type="button" class="swatch-cell" style="background:none; border:none; cursor:pointer;"
+              :class="{ selected: isSelected({{ polish.pk }}) }"
+              @click="toggle({{ polish.pk }}, '{{ polish.name|escapejs }}', '{{ polish.hex_color }}')">
+        <div style="position:relative; width:100%;">
+          <span class="code">{{ polish.catalog_code }}</span>
+          <div class="swatch {% for c in polish.finish_classes %}{{ c }} {% endfor %}{% if polish.is_rainbow %}is-rainbow{% endif %}"
+               style="background: {{ polish.hex_color }};"></div>
+          <span class="check" x-show="isSelected({{ polish.pk }})" x-cloak>✓</span>
+        </div>
+        <div class="name">{{ polish.name }}</div>
+        <div class="brand">{{ polish.brand.name }}</div>
+      </button>
+    {% empty %}
+      <p class="empty" style="grid-column:1/-1;">No polishes to compare yet.</p>
+    {% endfor %}
+  </div>
+
+  <div class="selection-bar" x-show="selected.length > 0" x-cloak>
+    <div style="display:flex;">
+      <template x-for="(p, i) in selected" :key="p.id">
+        <span :style="`width:30px;height:30px;border-radius:50%;background:${p.hex};box-shadow:0 0 0 2px var(--surface2); margin-left:${i ? '-10px' : '0'};`"></span>
+      </template>
+    </div>
+    <div style="font-size:11px; color:var(--mauve); flex:1;" x-text="summary"></div>
+    <a class="btn holo" :href="compareUrl" x-show="ready">Compare →</a>
+  </div>
+</div>
+{% endblock %}

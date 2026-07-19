@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.date_worn|date:"j M Y" }} · Swatchbook{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <a href="{% url 'log_list' %}" class="icon-btn" aria-label="Back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l-7 7 7 7"/></svg>
+  </a>
+  <div>
+    <div class="sub">{{ entry.date_worn|date:"d M Y"|upper }}</div>
+    <h2 style="font-size:20px;">{{ entry.title }}</h2>
+  </div>
+  <a href="{% url 'log_update' entry.pk %}" class="icon-btn" aria-label="Edit">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10-10-4-4L4 16v4z"/></svg>
+  </a>
+</div>
+
+{% for photo in entry.photos.all %}
+  <img src="{{ photo.image.url }}" alt="" style="width:100%; border-radius:16px; margin-bottom:10px;">
+{% endfor %}
+
+<div class="sub" style="margin-top:12px;">Polishes</div>
+{% for row in entry.entry_polishes.all %}
+  <a class="logrow" href="{% url 'polish_detail' row.polish.pk %}">
+    <div style="width:38px; flex:0 0 auto;">
+      <div class="swatch {% for c in row.polish.finish_classes %}{{ c }} {% endfor %}{% if row.polish.is_rainbow %}is-rainbow{% endif %}"
+           style="background: {{ row.polish.hex_color }};"></div>
+    </div>
+    <div class="logmeta" style="flex:1;">
+      <div class="n">{{ row.polish.name }}</div>
+      <div class="date">{{ row.polish.brand.name|upper }} · {{ row.get_role_display|upper }}</div>
+    </div>
+    <span style="color:var(--mauve-dim);">›</span>
+  </a>
+{% empty %}
+  <p class="empty">No polishes linked to this entry.</p>
+{% endfor %}
+
+{% if entry.notes %}
+  <div class="divider"></div>
+  <div class="sub">Notes</div>
+  <p class="desc">{{ entry.notes|linebreaksbr }}</p>
+{% endif %}
+
+<div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
+  <a class="btn ghost" href="{% url 'log_update' entry.pk %}">Edit entry</a>
+  <a class="btn ghost" href="{% url 'log_delete' entry.pk %}" style="color:var(--pink);">Delete entry</a>
+</div>
+{% endblock %}

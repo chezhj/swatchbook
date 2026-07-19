@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Swatchbook{% endblock %}
+
+{% block content %}
+<div style="padding-top:60px;">
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px;">
+    <span style="width:14px; height:14px; border-radius:50%; background:var(--holo);"></span>
+    <span class="mono" style="letter-spacing:.14em; font-size:12px; color:var(--mauve); text-transform:uppercase;">Swatchbook</span>
+  </div>
+
+  <h1 style="font-family:var(--font-display); font-style:italic; font-weight:500; font-size:38px; line-height:1.05;">
+    Sign in
+  </h1>
+
+  <form method="post" style="margin-top:28px;">
+    {% csrf_token %}
+    {% if form.errors %}
+      <ul class="messages"><li style="color:var(--pink);">That username and password didn't match.</li></ul>
+    {% endif %}
+    {% for field in form %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+      </div>
+    {% endfor %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn holo" style="margin-top:8px;">Sign in</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block nav %}{% endblock %}

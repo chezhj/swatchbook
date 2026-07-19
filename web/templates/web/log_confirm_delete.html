@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Delete entry · Swatchbook{% endblock %}
+
+{% block content %}
+<div class="topbar"><h2>Delete entry?</h2></div>
+
+<p class="desc">
+  This removes the log entry from {{ object.date_worn|date:"j M Y" }}
+  ({{ object.title }}) and its photos. The polishes themselves stay in your collection.
+</p>
+
+<form method="post" style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
+  {% csrf_token %}
+  <button type="submit" class="btn primary" style="background:var(--pink);">Yes, delete it</button>
+  <a class="btn ghost" href="{% url 'log_detail' object.pk %}">Keep it</a>
+</form>
+{% endblock %}

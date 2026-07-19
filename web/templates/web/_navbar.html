@@ -1,0 +1,22 @@
+{% comment %}
+Bottom nav. "Random" stays visible but disabled with the mockup's phase-2 badge —
+removing it would collapse the four-item layout the design is built around.
+{% endcomment %}
+<nav class="navbar">
+  <a href="{% url 'collection' %}" class="navitem {% if nav_active == 'collection' %}active{% endif %}" aria-label="Collection">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span class="bar"></span>
+  </a>
+  <a href="{% url 'log_list' %}" class="navitem {% if nav_active == 'log' %}active{% endif %}" aria-label="Log">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>
+    <span class="bar"></span>
+  </a>
+  <a href="{% url 'randomizer' %}" class="navitem {% if nav_active == 'random' %}active{% endif %}" aria-label="Randomizer (phase 2)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h4l9 12h5M14 6h5v5M3 18h4l3-4M17 18l4 0v-5"/></svg>
+    <span class="bar"></span>
+  </a>
+  <a href="{% url 'compare_picker' %}" class="navitem {% if nav_active == 'compare' %}active{% endif %}" aria-label="Compare">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/></svg>
+    <span class="bar"></span>
+  </a>
+</nav>

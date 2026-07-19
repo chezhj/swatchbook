@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Randomizer · Swatchbook{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="sub">Suggest a combo</div>
+    <h2>Randomizer</h2>
+  </div>
+  <span class="phase">phase 2</span>
+</div>
+
+{% comment %}
+Deliberately a placeholder — spec section 7 defers the randomizer. The screen exists so
+the nav keeps its four-item layout and the feature has an obvious home later.
+{% endcomment %}
+<p class="empty" style="padding-top:60px;">
+  Not built yet.<br><br>
+  This will suggest a combination pulled from your own collection, filtered by mood and
+  season tags. Nothing generated — just a filtered random pick.
+</p>
+
+<div style="margin-top:20px;">
+  <a class="btn ghost" href="{% url 'collection' %}">Back to collection</a>
+</div>
+{% endblock %}

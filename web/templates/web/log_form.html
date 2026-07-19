@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} · Swatchbook{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <a href="{% url 'log_list' %}" class="icon-btn" aria-label="Cancel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </a>
+  <h2>{{ heading }}</h2>
+  <span style="width:34px;"></span>
+</div>
+
+{% if prefill_polish %}
+  <p class="sub" style="text-transform:none; letter-spacing:0;">
+    Pre-filling with <strong style="color:var(--bone);">{{ prefill_polish.name }}</strong> — pick it in the first row below.
+  </p>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" x-data="logEntryForm()">
+  {% csrf_token %}
+
+  {{ form.non_field_errors }}
+  {% for field in form %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {{ field.errors }}
+    </div>
+  {% endfor %}
+
+  <div class="divider"></div>
+  <div class="sub">Polishes worn</div>
+  {{ polish_formset.management_form }}
+  <div x-ref="polishesRows">
+    {% for subform in polish_formset %}
+      <div class="formset-row">
+        {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
+        {% for field in subform.visible_fields %}
+          <div class="field" style="margin-bottom:8px;">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <button type="button" class="btn ghost" @click="addRow('polishes')" style="margin-bottom:14px;">+ Add another polish</button>
+
+  <div class="divider"></div>
+  <div class="sub">Photos</div>
+  {{ photo_formset.management_form }}
+  <div x-ref="photosRows">
+    {% for subform in photo_formset %}
+      <div class="formset-row">
+        {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
+        {% for field in subform.visible_fields %}
+          <div class="field" style="margin-bottom:8px;">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <button type="button" class="btn ghost" @click="addRow('photos')" style="margin-bottom:14px;">+ Add another photo</button>
+
+  <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
+    <button type="submit" class="btn holo">Save entry</button>
+    <a class="btn ghost" href="{% url 'log_list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
