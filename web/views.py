@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.db import transaction
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import DeleteView, DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView
@@ -8,7 +8,13 @@ from django.views.generic.edit import CreateView, UpdateView
 from catalog.models import Color, Formula, Polish
 from wearlog.models import LogEntry
 
-from .forms import LogEntryForm, LogEntryPolishFormSet, LogPhotoFormSet
+from .forms import (
+    LogEntryForm,
+    LogEntryPolishFormSet,
+    LogPhotoFormSet,
+    PolishForm,
+    PolishPhotoFormSet,
+)
 
 
 class VocabularyMixin:
@@ -57,6 +63,64 @@ class PolishDetailView(DetailView):
             :5
         ]
         return context
+
+
+class PolishFormMixin:
+    """Shared photo-formset wiring for the polish create/update views."""
+
+    model = Polish
+    form_class = PolishForm
+    template_name = "web/polish_form.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        instance = self.object if self.object else None
+        if self.request.method == "POST":
+            context["photo_formset"] = PolishPhotoFormSet(
+                self.request.POST, self.request.FILES, instance=instance, prefix="photos"
+            )
+        else:
+            context["photo_formset"] = PolishPhotoFormSet(instance=instance, prefix="photos")
+        return context
+
+    def form_valid(self, form):
+        photo_formset = self.get_context_data()["photo_formset"]
+        if not photo_formset.is_valid():
+            return self.form_invalid(form)
+
+        with transaction.atomic():
+            self.object = form.save()
+            photo_formset.instance = self.object
+            photo_formset.save()
+
+        messages.success(self.request, f"Saved {self.object.name}.")
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse("polish_detail", args=[self.object.pk])
+
+
+class PolishCreateView(PolishFormMixin, CreateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["heading"] = "Add a polish"
+        return context
+
+
+class PolishUpdateView(PolishFormMixin, UpdateView):
+    def get_queryset(self):
+        return Polish.objects.with_related()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["heading"] = "Edit polish"
+        return context
+
+
+class PolishDeleteView(DeleteView):
+    model = Polish
+    template_name = "web/polish_confirm_delete.html"
+    success_url = reverse_lazy("collection")
 
 
 class ComparePickerView(VocabularyMixin, ListView):

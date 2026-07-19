@@ -48,6 +48,10 @@ Verification commands: prefer the PowerShell tool. The Bash tool swallows stdout
 - **Grid markup exists twice**: server-rendered in `web/_swatch_cell.html` and
   client-rendered in `frontend/src/alpine/grid.js`. Keep the two in step.
 - **Images**: any new `ImageField` should call `resize_in_place` in `save()`.
+- **Polish CRUD lives in the web UI**, not just admin (`web/forms.py:PolishForm`).
+  Brand and collection can be created inline from that form — a fresh install has no
+  brands, so a plain dropdown would make the first polish unaddable. Keep that path
+  working if you touch the form.
 
 ## Scope
 

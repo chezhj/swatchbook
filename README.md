@@ -56,12 +56,14 @@ Otherwise `npm run watch` rebuilds into `web/static/dist/` on save.
 | Route | Purpose |
 |---|---|
 | `/` | Collection grid + filter/sort sheet |
+| `/polish/new/` | Add a polish (brand/collection can be created inline) |
 | `/polish/<id>/` | Polish detail |
+| `/polish/<id>/edit/` | Edit or delete a polish |
 | `/compare/` → `/compare/result/` | Pick two polishes, compare side by side |
 | `/log/` | Wear log, newest first |
 | `/log/new/` | New log entry (photos + linked polishes) |
 | `/random/` | Randomizer — placeholder, phase 2 |
-| `/admin/` | Data entry for brands, collections, polishes |
+| `/admin/` | Bulk edits, and managing the Formula/Color vocabularies |
 
 ## API
 
@@ -81,7 +83,7 @@ Sort accepts `name`, `brand`, `-created_at`, `±last_used`; anything else falls 
 ## Development
 
 ```bash
-poetry run pytest              # 62 tests
+poetry run pytest              # 86 tests
 poetry run ruff check .
 poetry run black .
 poetry run pre-commit install  # once, to run both on commit

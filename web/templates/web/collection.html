@@ -16,6 +16,9 @@
       <button type="button" class="icon-btn" @click="sheetOpen = true" aria-label="Filter and sort">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
       </button>
+      <a href="{% url 'polish_create' %}" class="icon-btn" aria-label="Add a polish">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+      </a>
     </div>
   </div>
 
@@ -39,7 +42,8 @@
       {% include "web/_swatch_cell.html" %}
     {% empty %}
       <p class="empty" style="grid-column:1/-1;">
-        Nothing here yet. Add polishes in <a href="/admin/catalog/polish/add/" class="holo-text">the admin</a>.
+        Nothing here yet.<br><br>
+        <a href="{% url 'polish_create' %}" class="holo-text">Add your first polish →</a>
       </p>
     {% endfor %}
   </div>

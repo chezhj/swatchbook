@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} · Swatchbook{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <a href="{% if object %}{% url 'polish_detail' object.pk %}{% else %}{% url 'collection' %}{% endif %}"
+     class="icon-btn" aria-label="Cancel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </a>
+  <h2>{{ heading }}</h2>
+  <span style="width:34px;"></span>
+</div>
+
+<form method="post" enctype="multipart/form-data"
+      x-data="{ hex: '{{ form.hex_color.value|default:"#8a8a8a" }}' }">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+
+  {# Live swatch preview, so the colour picker means something before saving. #}
+  <div style="display:flex; justify-content:center; margin-bottom:18px;">
+    <div style="width:110px;">
+      <div class="swatch" :style="`background: ${hex};`"></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="{{ form.name.id_for_label }}">Name</label>
+    {{ form.name }}{{ form.name.errors }}
+  </div>
+
+  <div class="field">
+    <label for="{{ form.hex_color.id_for_label }}">Swatch colour</label>
+    <input type="color" x-model="hex" name="{{ form.hex_color.html_name }}"
+           id="{{ form.hex_color.id_for_label }}" style="height:44px; padding:4px;">
+    {{ form.hex_color.errors }}
+  </div>
+
+  <div class="divider"></div>
+  <div class="sub">Brand</div>
+  <div class="field">
+    <label for="{{ form.brand.id_for_label }}">Existing brand</label>
+    {{ form.brand }}{{ form.brand.errors }}
+  </div>
+  <div class="field">
+    <label for="{{ form.new_brand.id_for_label }}">{{ form.new_brand.label }}</label>
+    {{ form.new_brand }}{{ form.new_brand.errors }}
+  </div>
+
+  <div class="sub">Collection <span style="text-transform:none;">(optional)</span></div>
+  <div class="field">
+    <label for="{{ form.collection.id_for_label }}">Existing collection</label>
+    {{ form.collection }}{{ form.collection.errors }}
+  </div>
+  <div class="field">
+    <label for="{{ form.new_collection.id_for_label }}">{{ form.new_collection.label }}</label>
+    {{ form.new_collection }}{{ form.new_collection.errors }}
+  </div>
+  <div class="field">
+    <label for="{{ form.new_collection_year.id_for_label }}">{{ form.new_collection_year.label }}</label>
+    {{ form.new_collection_year }}{{ form.new_collection_year.errors }}
+  </div>
+
+  <div class="divider"></div>
+  <div class="sub">Formula</div>
+  <div class="chiprow" style="margin-bottom:16px;">
+    {% for choice in form.formulas %}
+      <label class="chip" style="cursor:pointer;">{{ choice.tag }} {{ choice.choice_label }}</label>
+    {% endfor %}
+  </div>
+  {{ form.formulas.errors }}
+
+  <div class="sub">Colour</div>
+  <div class="chiprow" style="margin-bottom:16px;">
+    {% for choice in form.colors %}
+      <label class="chip" style="cursor:pointer;">{{ choice.tag }} {{ choice.choice_label }}</label>
+    {% endfor %}
+  </div>
+  {{ form.colors.errors }}
+
+  <div class="field">
+    <label for="{{ form.tags_text.id_for_label }}">{{ form.tags_text.label }}</label>
+    {{ form.tags_text }}{{ form.tags_text.errors }}
+  </div>
+
+  <div class="divider"></div>
+  <div class="field">
+    <label for="{{ form.description.id_for_label }}">Description</label>
+    {{ form.description }}{{ form.description.errors }}
+  </div>
+  <div class="field">
+    <label for="{{ form.webshop_link.id_for_label }}">Webshop link</label>
+    {{ form.webshop_link }}{{ form.webshop_link.errors }}
+  </div>
+  <div class="field">
+    <label for="{{ form.catalog_code.id_for_label }}">Catalog code</label>
+    {{ form.catalog_code }}{{ form.catalog_code.errors }}
+  </div>
+  <div class="field">
+    <label style="display:flex; align-items:center; gap:8px; text-transform:none;">
+      {{ form.in_collection }} Currently own this
+    </label>
+    {{ form.in_collection.errors }}
+  </div>
+
+  <div class="divider"></div>
+  <div class="sub">Photos</div>
+  {{ photo_formset.management_form }}
+  <div>
+    {% for subform in photo_formset %}
+      <div class="formset-row">
+        {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
+        {% for field in subform.visible_fields %}
+          <div class="field" style="margin-bottom:8px;">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}{{ field.errors }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
+    <button type="submit" class="btn holo">Save polish</button>
+    {% if object %}
+      <a class="btn ghost" href="{% url 'polish_delete' object.pk %}" style="color:var(--pink);">Delete polish</a>
+    {% endif %}
+    <a class="btn ghost" href="{% url 'collection' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
