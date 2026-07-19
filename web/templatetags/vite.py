@@ -16,8 +16,15 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
-DEV_SERVER = "http://localhost:5173"
 MANIFEST_PATH = Path(settings.BASE_DIR) / "web" / "static" / "dist" / ".vite" / "manifest.json"
+
+
+def _dev_server(request):
+    # Match whatever host the page itself was requested on (localhost, 127.0.0.1, a
+    # LAN IP for phone testing, ...) rather than a fixed hostname -- vite.config.js
+    # binds the dev server to all interfaces so it's reachable the same way.
+    host = request.get_host().rsplit(":", 1)[0] if request else "localhost"
+    return f"http://{host}:5173"
 
 
 @lru_cache(maxsize=1)
@@ -29,8 +36,8 @@ def _manifest():
         return {}
 
 
-@register.simple_tag
-def vite_asset(entry="src/main.js"):
+@register.simple_tag(takes_context=True)
+def vite_asset(context, entry="src/main.js"):
     """Emit the <script>/<link> tags for a Vite entry point."""
     if getattr(settings, "VITE_DEV_SERVER", False):
         # Note the URLs are server-root relative: vite.config.js sets base to '/' when
@@ -38,10 +45,11 @@ def vite_asset(entry="src/main.js"):
         # dev server 404s and the page renders unstyled.
         # The onerror turns "blank page, no idea why" into an actionable message when
         # VITE_DEV_MODE is on but nothing is listening on 5173.
+        dev_server = _dev_server(context.get("request"))
         return mark_safe(  # noqa: S308 - fixed, non-user content
-            f'<script type="module" src="{DEV_SERVER}/@vite/client"></script>'
-            f'<script type="module" src="{DEV_SERVER}/{entry}" '
-            f"onerror=\"console.error('Vite dev server unreachable at {DEV_SERVER} — "
+            f'<script type="module" src="{dev_server}/@vite/client"></script>'
+            f'<script type="module" src="{dev_server}/{entry}" '
+            f"onerror=\"console.error('Vite dev server unreachable at {dev_server} — "
             f"start it with: cd frontend \\u0026\\u0026 npm run dev, "
             f'or unset VITE_DEV_MODE to use built assets.\')"></script>'
         )
