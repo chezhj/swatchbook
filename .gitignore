@@ -26,6 +26,7 @@ web/static/dist/
 .pytest_cache/
 .ruff_cache/
 .coverage
+cov.xml
 htmlcov/
 
 # Editors / OS

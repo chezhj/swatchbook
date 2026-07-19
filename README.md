@@ -37,19 +37,26 @@ poetry run python manage.py seed_demo
 ## Running
 
 ```bash
-poetry run python manage.py runserver
+poetry run python manage.py runserver 8800
 ```
 
-Then open http://127.0.0.1:8000/ and sign in.
+Then open http://127.0.0.1:8800/ and sign in.
 
-For live-reloading frontend work, run Vite alongside Django and set
-`VITE_DEV_SERVER=True` in `config/settings/dev.py`:
+In VS Code, use the **Python: Django** launch config instead (F5) — it binds
+`0.0.0.0:8800` so you can also open the app on your phone at
+`http://<your-lan-ip>:8800/`, which is worth doing on a mobile-first layout.
+
+For live-reloading frontend work, use the **Django + Vite: Run Dev Server** config: it
+starts Vite as a pre-launch task and sets `VITE_DEV_MODE=True`, which makes
+`{% vite_asset %}` load from the dev server instead of the built manifest.
 
 ```bash
-cd frontend && npm run dev
+cd frontend && npm run dev     # the equivalent by hand, alongside:
+VITE_DEV_MODE=True poetry run python manage.py runserver 8800
 ```
 
-Otherwise `npm run watch` rebuilds into `web/static/dist/` on save.
+Otherwise `npm run watch` rebuilds into `web/static/dist/` on save. Phone testing needs
+built assets — the dev-server URL is hardcoded to `localhost`.
 
 ## Screens
 

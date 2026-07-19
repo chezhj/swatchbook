@@ -4,8 +4,8 @@
     {
       "name": "swatchbook",
       "runtimeExecutable": "poetry",
-      "runtimeArgs": ["run", "python", "manage.py", "runserver", "8000"],
-      "port": 8000
+      "runtimeArgs": ["run", "python", "manage.py", "runserver", "8800"],
+      "port": 8800
     }
   ]
 }

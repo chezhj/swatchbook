@@ -17,7 +17,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // The "Vite: Stop Dev Server" task in .vscode/tasks.json kills this exact port.
     strictPort: true,
     origin: 'http://localhost:5173',
+    // Django serves the page on :8800, so asset requests here are cross-origin.
+    cors: true,
   },
 });

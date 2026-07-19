@@ -24,6 +24,7 @@ ruff = "^0.9"
 black = "^25.1"
 django-debug-toolbar = "^5.0"
 pre-commit = "^4.1"
+pytest-cov = "^6.0"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

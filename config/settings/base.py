@@ -112,6 +112,10 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 60,
 }
 
+# When true, {% vite_asset %} points at the Vite dev server for hot reload instead of
+# the built manifest. Set by the "Django + Vite" launch config in .vscode/launch.json.
+VITE_DEV_SERVER = env.bool("VITE_DEV_MODE", default=False)
+
 # Longest edge, in pixels, that uploaded photos are resized down to. Phone photos are
 # 4000px+ and would bloat MEDIA_ROOT for no visible gain at these display sizes.
 IMAGE_MAX_EDGE = 1600

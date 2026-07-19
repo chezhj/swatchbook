@@ -1,0 +1,22 @@
+# Referenced by the "Python test coverage" launch config in .vscode/launch.json.
+[run]
+source = .
+branch = True
+omit =
+    */migrations/*
+    */tests/*
+    manage.py
+    passenger_wsgi.py
+    config/wsgi.py
+    config/settings/*
+    .venv/*
+    frontend/*
+
+[report]
+show_missing = True
+skip_covered = True
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    raise NotImplementedError
+    def __str__
