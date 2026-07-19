@@ -102,7 +102,7 @@ poetry run black .
 poetry run pre-commit install  # once, to run both on commit
 ```
 
-Tests use `config.settings.test` (in-memory DB, no debug toolbar).
+Tests use `config.settings.test` (in-memory DB, fast password hashing).
 
 ## Notes on the data model
 

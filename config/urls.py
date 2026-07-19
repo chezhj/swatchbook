@@ -10,8 +10,5 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
+    # Uploaded photos; in production the web server serves MEDIA_ROOT directly.
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-    import debug_toolbar
-
-    urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]

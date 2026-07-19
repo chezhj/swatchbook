@@ -1,7 +1,7 @@
 """Test settings.
 
-Deliberately not dev.py: the debug toolbar injects itself into responses and would
-both slow the suite down and break assertions on rendered HTML.
+Deliberately not dev.py: the suite wants an in-memory database and fast password
+hashing, and shouldn't inherit whatever local conveniences dev.py picks up.
 """
 
 from .base import *  # noqa: F403
