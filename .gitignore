@@ -31,9 +31,12 @@ htmlcov/
 
 # Editors / OS
 .idea/
-.vscode/
 .DS_Store
 Thumbs.db
+
+# .vscode/ is tracked on purpose — launch/tasks/extensions are shared project config.
+# Personal overrides belong in .vscode/settings.local.json, which is not.
+.vscode/*.local.json
 
 # Scratch
 files.zip

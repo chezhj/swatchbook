@@ -1,0 +1,82 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: pytest",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Python test coverage",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "--cov=.",
+                "--cov-report=xml:cov.xml",
+                "--cov-config=.coveragerc"
+            ]
+        },
+        {
+            "name": "Python: Django",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8800"
+            ],
+            "django": true,
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Django + Vite: Run Dev Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8800"
+            ],
+            "django": true,
+            "stopOnEntry": false,
+            "justMyCode": true,
+            "env": {
+                // Read by config/settings/base.py -> VITE_DEV_SERVER, which makes
+                // {% vite_asset %} load from the Vite dev server for hot reload.
+                "VITE_DEV_MODE": "True"
+            },
+            "preLaunchTask": "Vite: Start Dev Server",
+            "postDebugTask": "Vite: Stop Dev Server"
+        },
+        {
+            "name": "Django: Run against build assets",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8800"
+            ],
+            "django": true,
+            "justMyCode": true,
+            "preLaunchTask": "Vite: Build assets",
+            "env": {
+                "VITE_DEV_MODE": "False"
+            }
+        }
+    ]
+}

@@ -1,0 +1,134 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Vite: Build assets",
+            "type": "shell",
+            "command": "npm run build",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Vite: Start Dev Server",
+            "type": "shell",
+            "command": "npm run dev",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "custom", // Arbitrary identifier
+                "pattern": {
+                    "regexp": "^$" // Dummy regex (matches nothing)
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^\\s*VITE",
+                    "endsPattern": "^\\s*.*Local:.*localhost"
+                }
+            }
+        },
+        {
+            "label": "Vite: Stop Dev Server",
+            "type": "shell",
+            "options": {
+                "shell": {
+                    "executable": "powershell",
+                    "args": [
+                        "-Command"
+                    ]
+                }
+            },
+            // Port must match server.strictPort in frontend/vite.config.js.
+            "command": "Get-NetTCPConnection -LocalPort 5173 -ErrorAction Ignore | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction Ignore }",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "close": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Django: Migrate",
+            "type": "shell",
+            "command": "poetry run python manage.py migrate",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Django: Seed demo data",
+            "type": "shell",
+            "command": "poetry run python manage.py seed_demo",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Test: pytest",
+            "type": "shell",
+            "command": "poetry run pytest",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint: ruff + black",
+            "type": "shell",
+            "command": "poetry run ruff check . --fix; poetry run black .",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "shell": {
+                    "executable": "powershell",
+                    "args": [
+                        "-Command"
+                    ]
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}

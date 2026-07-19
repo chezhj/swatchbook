@@ -1,0 +1,18 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "ms-python.black-formatter",
+        // This project lints with ruff, not pylint.
+        "charliermarsh.ruff",
+        "batisteo.vscode-django",
+        "monosans.djlint",
+        // The frontend is Tailwind v4 + SCSS + Alpine.
+        "bradlc.vscode-tailwindcss",
+        "ryanluker.vscode-coverage-gutters",
+        "alexcvzz.vscode-sqlite",
+        "github.vscode-pull-request-github",
+        "vivaxy.vscode-conventional-commits"
+    ]
+}

@@ -1,0 +1,42 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:poetry",
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
+    },
+    "black-formatter.args": [
+        "--line-length",
+        "100"
+    ],
+    // Django templates are HTML; without this they get no syntax support.
+    "files.associations": {
+        "**/templates/**/*.html": "django-html"
+    },
+    "emmet.includeLanguages": {
+        "django-html": "html"
+    },
+    "coverage-gutters.coverageFileNames": [
+        "cov.xml"
+    ],
+    "search.exclude": {
+        "**/.venv": true,
+        "**/node_modules": true,
+        "**/staticfiles": true,
+        "**/web/static/dist": true,
+        "**/media": true
+    },
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/.ruff_cache": true
+    }
+}
