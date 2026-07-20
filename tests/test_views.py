@@ -26,11 +26,19 @@ class TestSmoke:
 
 
 class TestCollectionView:
-    def test_shows_the_swatch_and_its_finish_classes(self, auth_client, polish):
+    def test_photoless_polish_falls_back_to_the_placeholder_swatch(self, auth_client, polish):
         html = auth_client.get("/").content.decode()
-        assert polish.catalog_code in html
+        assert "is-empty" in html
         assert "f-glitter" in html
-        assert "#1f6e6e" in html
+
+    def test_photo_becomes_the_swatch(self, auth_client, polish, big_image):
+        from catalog.models import PolishPhoto
+
+        photo = PolishPhoto.objects.create(polish=polish, image=big_image(), is_primary=True)
+        html = auth_client.get("/").content.decode()
+        assert photo.image.url in html
+        # A photographed tile drops the simulated finish, so it must not be marked empty.
+        assert "is-empty" not in html
 
     def test_hides_polishes_no_longer_owned(self, auth_client, polish, other_polish):
         other_polish.in_collection = False
@@ -102,6 +110,35 @@ class TestLogForms:
         entry = LogEntry.objects.get()
         assert entry.notes == "Test entry"
         assert list(entry.polishes.all()) == [polish]
+
+    def test_own_title_is_saved_and_shown(self, auth_client, polish, log_entry):
+        response = auth_client.post(
+            f"/log/{log_entry.pk}/edit/",
+            {
+                "title": "Beach day mani",
+                "date_worn": "2026-07-12",
+                "notes": "",
+                "polishes-TOTAL_FORMS": "0",
+                "polishes-INITIAL_FORMS": "0",
+                "polishes-MIN_NUM_FORMS": "0",
+                "polishes-MAX_NUM_FORMS": "1000",
+                "photos-TOTAL_FORMS": "0",
+                "photos-INITIAL_FORMS": "0",
+                "photos-MIN_NUM_FORMS": "0",
+                "photos-MAX_NUM_FORMS": "1000",
+            },
+        )
+        assert response.status_code == 302
+        log_entry.refresh_from_db()
+        assert log_entry.title == "Beach day mani"
+        assert "Beach day mani" in auth_client.get("/log/").content.decode()
+
+    def test_log_list_has_search_and_the_filter_sheet(self, auth_client, log_entry):
+        html = auth_client.get("/log/").content.decode()
+        assert "Search by title" in html
+        # The sheet lists the same vocabularies as the collection's.
+        for name in ["Creme", "Holographic", "Teal", "Rainbow"]:
+            assert name in html
 
     def test_prefills_from_the_detail_screen_cta(self, auth_client, polish):
         response = auth_client.get(f"/log/new/?polish={polish.pk}")

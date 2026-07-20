@@ -23,7 +23,7 @@
   </div>
 
   <div class="field" style="margin-bottom:10px;">
-    <input type="search" x-ref="search" x-model="search" placeholder="Search by name, brand or code…" aria-label="Search polishes">
+    <input type="search" x-ref="search" x-model="search" placeholder="Search by name or brand…" aria-label="Search polishes">
   </div>
 
   <template x-if="activeFilterCount > 0">
@@ -52,8 +52,7 @@
     <template x-for="polish in (results || [])" :key="polish.id">
       <a class="swatch-cell" :href="polish.detail_url">
         <div style="position:relative; width:100%;">
-          <span class="code" x-text="polish.catalog_code"></span>
-          <div :class="swatchClasses(polish)" :style="`background: ${polish.hex_color};`"></div>
+          <div :class="swatchClasses(polish)" :style="swatchStyle(polish)"></div>
         </div>
         <div class="name" x-text="polish.name"></div>
         <div class="brand" x-text="polish.brand_name"></div>

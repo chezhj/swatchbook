@@ -6,7 +6,7 @@
 
 <p class="desc">
   This removes <strong style="color:var(--bone);">{{ object.name }}</strong>
-  ({{ object.catalog_code }}) and its photos from your collection.
+  and its photos from your collection.
   {% if object.log_entries.exists %}
     It's linked to {{ object.log_entries.count }} log entr{{ object.log_entries.count|pluralize:"y,ies" }},
     which will lose this polish.

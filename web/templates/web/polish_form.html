@@ -11,28 +11,58 @@
   <span style="width:34px;"></span>
 </div>
 
-<form method="post" enctype="multipart/form-data"
-      x-data="{ hex: '{{ form.hex_color.value|default:"#8a8a8a" }}' }">
+<form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.non_field_errors }}
 
-  {# Live swatch preview, so the colour picker means something before saving. #}
-  <div style="display:flex; justify-content:center; margin-bottom:18px;">
-    <div style="width:110px;">
-      <div class="swatch" :style="`background: ${hex};`"></div>
-    </div>
+  {% comment %}
+  Photos lead the form: they are what the polish looks like, so they get the top of
+  the screen rather than a footnote below the metadata. The first tile is the large
+  one — it becomes the grid thumbnail unless another is marked primary.
+  {% endcomment %}
+  {{ photo_formset.management_form }}
+  {{ photo_formset.non_form_errors }}
+  <div class="photo-slots">
+    {% for subform in photo_formset %}
+      <div class="photo-slot{% if forloop.first %} lead{% endif %}"
+           x-data="photoTile('{% if subform.instance.pk %}{{ subform.instance.image.url }}{% endif %}')"
+           :class="{ 'is-removed': removed }">
+        {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
+
+        <label class="photo-drop">
+          <img :src="preview" x-show="!isEmpty" x-cloak alt="">
+          <span class="photo-add" x-show="isEmpty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+            {% if forloop.first %}<em>Add a photo</em>{% endif %}
+          </span>
+          <input type="file" accept="image/*" @change="pick($event)"
+                 name="{{ subform.image.html_name }}" id="{{ subform.image.id_for_label }}">
+        </label>
+
+        <div class="photo-actions" x-show="!isEmpty" x-cloak>
+          <label class="photo-flag">
+            <input type="checkbox" name="{{ subform.is_primary.html_name }}"
+                   id="{{ subform.is_primary.id_for_label }}"
+                   {% if subform.instance.is_primary %}checked{% endif %}>
+            <span>Main</span>
+          </label>
+          {% if subform.instance.pk %}
+            <label class="photo-flag danger">
+              <input type="checkbox" x-model="removed"
+                     name="{{ subform.DELETE.html_name }}" id="{{ subform.DELETE.id_for_label }}">
+              <span>Remove</span>
+            </label>
+          {% endif %}
+        </div>
+
+        {{ subform.image.errors }}
+      </div>
+    {% endfor %}
   </div>
 
   <div class="field">
     <label for="{{ form.name.id_for_label }}">Name</label>
     {{ form.name }}{{ form.name.errors }}
-  </div>
-
-  <div class="field">
-    <label for="{{ form.hex_color.id_for_label }}">Swatch colour</label>
-    <input type="color" x-model="hex" name="{{ form.hex_color.html_name }}"
-           id="{{ form.hex_color.id_for_label }}" style="height:44px; padding:4px;">
-    {{ form.hex_color.errors }}
   </div>
 
   <div class="divider"></div>
@@ -92,31 +122,10 @@
     {{ form.webshop_link }}{{ form.webshop_link.errors }}
   </div>
   <div class="field">
-    <label for="{{ form.catalog_code.id_for_label }}">Catalog code</label>
-    {{ form.catalog_code }}{{ form.catalog_code.errors }}
-  </div>
-  <div class="field">
     <label style="display:flex; align-items:center; gap:8px; text-transform:none;">
       {{ form.in_collection }} Currently own this
     </label>
     {{ form.in_collection.errors }}
-  </div>
-
-  <div class="divider"></div>
-  <div class="sub">Photos</div>
-  {{ photo_formset.management_form }}
-  <div>
-    {% for subform in photo_formset %}
-      <div class="formset-row">
-        {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
-        {% for field in subform.visible_fields %}
-          <div class="field" style="margin-bottom:8px;">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}{{ field.errors }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endfor %}
   </div>
 
   <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">

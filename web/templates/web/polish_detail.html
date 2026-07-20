@@ -6,18 +6,35 @@
   <a href="{% url 'collection' %}" class="icon-btn" aria-label="Back">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l-7 7 7 7"/></svg>
   </a>
-  <span class="mono" style="font-size:10px; color:var(--mauve-dim);">{{ polish.catalog_code }}</span>
+  <span style="flex:1;"></span>
   <a href="{% url 'polish_update' polish.pk %}" class="icon-btn" aria-label="Edit polish">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10-10-4-4L4 16v4z"/></svg>
   </a>
 </div>
 
-{% if polish.primary_photo %}
-  <img src="{{ polish.primary_photo.image.url }}" alt="{{ polish.name }}"
-       style="width:148px; height:148px; object-fit:cover; border-radius:var(--swatch-radius); display:block; margin:10px auto 16px;">
+{% comment %}
+Photos lead the detail screen: a gallery when there is more than one, the single shot
+when there isn't, and the placeholder tile only for polishes not photographed yet.
+{% endcomment %}
+{% if polish.photos.all|length > 1 %}
+  <div class="photo-strip-wrap" x-data="photoStrip({{ polish.photos.all|length }})">
+    <div class="photo-strip" x-ref="strip" @scroll.passive="onScroll()">
+      {% for photo in polish.photos.all %}
+        <img src="{{ photo.image.url }}" alt="{{ polish.name }}">
+      {% endfor %}
+    </div>
+    <div class="photo-dots" role="tablist" aria-label="Photos">
+      {% for photo in polish.photos.all %}
+        <button type="button" :class="{ on: active === {{ forloop.counter0 }} }"
+                @click="goTo({{ forloop.counter0 }})"
+                aria-label="Photo {{ forloop.counter }}"></button>
+      {% endfor %}
+    </div>
+  </div>
+{% elif polish.photo_url %}
+  <img class="hero-photo" src="{{ polish.photo_url }}" alt="{{ polish.name }}">
 {% else %}
-  <div class="hero-swatch swatch {% for c in polish.finish_classes %}{{ c }} {% endfor %}{% if polish.is_rainbow %}is-rainbow{% endif %}"
-       style="background: {{ polish.hex_color }};"></div>
+  <div class="hero-swatch">{% include "web/_swatch.html" %}</div>
 {% endif %}
 
 <div class="detail-name">{{ polish.name }}</div>
@@ -56,7 +73,7 @@
         {% if entry.primary_photo %}<img src="{{ entry.primary_photo.image.url }}" alt="">{% else %}<div class="streak"></div>{% endif %}
       </div>
       <div class="logmeta" style="flex:1;">
-        <div class="n">{{ entry.title }}</div>
+        <div class="n">{{ entry.display_title }}</div>
         <div class="date">{{ entry.date_worn|date:"d M Y"|upper }}</div>
       </div>
       <span style="color:var(--mauve-dim);">›</span>

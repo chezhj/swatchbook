@@ -19,12 +19,10 @@ def photo_management(total=0):
 def base_payload(**overrides):
     payload = {
         "name": "New Polish",
-        "hex_color": "#123456",
         "formulas": [Formula.objects.get(name="Creme").pk],
         "colors": [Color.objects.get(name="Blue").pk],
         "description": "",
         "webshop_link": "",
-        "catalog_code": "",
         "in_collection": "on",
         "new_brand": "",
         "new_collection": "",
@@ -52,6 +50,15 @@ class TestEntryPoints:
     def test_add_form_renders(self, auth_client):
         assert auth_client.get("/polish/new/").status_code == 200
 
+    def test_form_leads_with_photos_and_drops_colour_and_code(self, auth_client):
+        html = auth_client.get("/polish/new/").content.decode()
+        assert "photo-slots" in html
+        # The swatch is the photo now; neither a colour picker nor a code is asked for.
+        assert 'type="color"' not in html
+        assert "catalog_code" not in html
+        # Photos come before the name field rather than trailing the form.
+        assert html.index("photo-slots") < html.index('name="name"')
+
 
 class TestCreate:
     def test_creates_with_an_existing_brand(self, auth_client, brand):
@@ -59,7 +66,6 @@ class TestCreate:
         assert response.status_code == 302
         polish = Polish.objects.get(name="New Polish")
         assert polish.brand == brand
-        assert polish.catalog_code == "HT-001"  # auto-generated
         assert [f.name for f in polish.formulas.all()] == ["Creme"]
 
     def test_creates_a_brand_on_the_fly(self, auth_client):
@@ -69,7 +75,6 @@ class TestCreate:
         assert response.status_code == 302
         polish = Polish.objects.get()
         assert polish.brand.name == "Holo Taco"
-        assert polish.catalog_code == "HT-001"
 
     def test_reuses_an_existing_brand_case_insensitively(self, auth_client, brand):
         auth_client.post("/polish/new/", base_payload(new_brand="holo taco"))
@@ -105,9 +110,18 @@ class TestCreate:
         auth_client.post("/polish/new/", base_payload(brand=str(brand.pk), tags_text="Summer"))
         assert Tag.objects.filter(name="Summer").count() == 1
 
-    def test_manual_catalog_code_is_kept(self, auth_client, brand):
-        auth_client.post("/polish/new/", base_payload(brand=str(brand.pk), catalog_code="ZZ-042"))
-        assert Polish.objects.get().catalog_code == "ZZ-042"
+    def test_uploads_several_photos_at_once(self, auth_client, brand, big_image):
+        # Photos are the swatch, so the form offers more than one slot up front.
+        payload = base_payload(brand=str(brand.pk), **photo_management(2))
+        payload["photos-0-image"] = big_image(name="a.jpg")
+        payload["photos-1-image"] = big_image(name="b.jpg")
+        payload["photos-1-is_primary"] = "on"
+
+        assert auth_client.post("/polish/new/", payload).status_code == 302
+        polish = Polish.objects.get()
+        assert polish.photos.count() == 2
+        assert polish.photos.filter(is_primary=True).count() == 1
+        assert polish.photo_url == polish.photos.get(is_primary=True).image.url
 
     def test_uploaded_photo_is_resized(self, auth_client, brand, big_image):
         from PIL import Image
@@ -136,13 +150,6 @@ class TestValidation:
         assert response.status_code == 200
         assert Polish.objects.count() == 0
 
-    def test_rejects_a_bad_hex_colour(self, auth_client, brand):
-        response = auth_client.post(
-            "/polish/new/", base_payload(brand=str(brand.pk), hex_color="nope")
-        )
-        assert response.status_code == 200
-        assert Polish.objects.count() == 0
-
     def test_requires_formula_and_colour(self, auth_client, brand):
         payload = base_payload(brand=str(brand.pk))
         payload["formulas"] = []
@@ -162,12 +169,7 @@ class TestUpdate:
     def test_saves_changes(self, auth_client, polish, brand):
         response = auth_client.post(
             f"/polish/{polish.pk}/edit/",
-            base_payload(
-                brand=str(brand.pk),
-                name="Teal No Lies v2",
-                catalog_code=polish.catalog_code,
-                tags_text="Ocean",
-            ),
+            base_payload(brand=str(brand.pk), name="Teal No Lies v2", tags_text="Ocean"),
         )
         assert response.status_code == 302
         polish.refresh_from_db()
@@ -175,9 +177,7 @@ class TestUpdate:
         assert [t.name for t in polish.tags.all()] == ["Ocean"]
 
     def test_can_mark_as_no_longer_owned(self, auth_client, polish, brand):
-        payload = base_payload(
-            brand=str(brand.pk), name=polish.name, catalog_code=polish.catalog_code
-        )
+        payload = base_payload(brand=str(brand.pk), name=polish.name)
         del payload["in_collection"]  # unchecked checkbox is simply absent
         auth_client.post(f"/polish/{polish.pk}/edit/", payload)
         polish.refresh_from_db()

@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import serializers
 
 from .models import LogEntry, LogEntryPolish, LogPhoto
@@ -12,7 +13,7 @@ class LogPhotoSerializer(serializers.ModelSerializer):
 class LogEntryPolishSerializer(serializers.ModelSerializer):
     polish_name = serializers.CharField(source="polish.name", read_only=True)
     brand_name = serializers.CharField(source="polish.brand.name", read_only=True)
-    hex_color = serializers.CharField(source="polish.hex_color", read_only=True)
+    photo_url = serializers.CharField(source="polish.photo_url", read_only=True)
     finish_classes = serializers.ListField(
         source="polish.finish_classes", child=serializers.CharField(), read_only=True
     )
@@ -24,7 +25,7 @@ class LogEntryPolishSerializer(serializers.ModelSerializer):
             "polish",
             "polish_name",
             "brand_name",
-            "hex_color",
+            "photo_url",
             "finish_classes",
             "role",
         ]
@@ -33,11 +34,28 @@ class LogEntryPolishSerializer(serializers.ModelSerializer):
 class LogEntrySerializer(serializers.ModelSerializer):
     entry_polishes = LogEntryPolishSerializer(many=True, required=False)
     photos = LogPhotoSerializer(many=True, read_only=True)
-    title = serializers.CharField(read_only=True)
+    # `title` is the user's own (writable, may be blank); `display_title` is what a
+    # list row shows — the title, else the polishes worn.
+    display_title = serializers.CharField(read_only=True)
+    photo_url = serializers.CharField(read_only=True)
+    detail_url = serializers.SerializerMethodField()
 
     class Meta:
         model = LogEntry
-        fields = ["id", "date_worn", "notes", "title", "entry_polishes", "photos"]
+        fields = [
+            "id",
+            "date_worn",
+            "title",
+            "display_title",
+            "notes",
+            "entry_polishes",
+            "photos",
+            "photo_url",
+            "detail_url",
+        ]
+
+    def get_detail_url(self, obj):
+        return reverse("log_detail", args=[obj.pk])
 
     def create(self, validated_data):
         rows = validated_data.pop("entry_polishes", [])

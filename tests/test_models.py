@@ -3,7 +3,7 @@ import datetime
 import pytest
 from PIL import Image
 
-from catalog.models import Brand, Color, Formula, Polish, PolishPhoto
+from catalog.models import Color, Formula, Polish, PolishPhoto
 from wearlog.models import LogEntry, LogPhoto
 
 pytestmark = pytest.mark.django_db
@@ -27,37 +27,6 @@ class TestVocabularies:
         assert Formula.objects.get(name=name).css_class == expected
 
 
-class TestCatalogCode:
-    def test_auto_generates_from_brand_initials(self, brand):
-        polish = Polish.objects.create(brand=brand, name="Test", hex_color="#111111")
-        assert polish.catalog_code == "HT-001"
-
-    def test_single_word_brand_uses_first_two_letters(self, db):
-        ilnp = Brand.objects.create(name="ILNP")
-        polish = Polish.objects.create(brand=ilnp, name="Test", hex_color="#111111")
-        assert polish.catalog_code == "IL-001"
-
-    def test_sequence_increments_per_brand(self, brand):
-        first = Polish.objects.create(brand=brand, name="One", hex_color="#111111")
-        second = Polish.objects.create(brand=brand, name="Two", hex_color="#222222")
-        assert [first.catalog_code, second.catalog_code] == ["HT-001", "HT-002"]
-
-    def test_manual_code_is_preserved(self, brand):
-        polish = Polish.objects.create(
-            brand=brand, name="Manual", hex_color="#111111", catalog_code="ZZ-999"
-        )
-        assert polish.catalog_code == "ZZ-999"
-
-    def test_deleting_does_not_cause_a_collision(self, brand):
-        first = Polish.objects.create(brand=brand, name="One", hex_color="#111111")
-        second = Polish.objects.create(brand=brand, name="Two", hex_color="#222222")
-        second.delete()
-        third = Polish.objects.create(brand=brand, name="Three", hex_color="#333333")
-        # HT-002 is free again; HT-001 is still taken.
-        assert third.catalog_code == "HT-002"
-        assert first.catalog_code == "HT-001"
-
-
 class TestPolishRendering:
     def test_finish_classes_come_from_linked_formulas(self, polish):
         assert sorted(polish.finish_classes) == ["f-glitter", "f-metallic"]
@@ -66,6 +35,17 @@ class TestPolishRendering:
         assert polish.is_rainbow is False
         polish.colors.add(Color.objects.get(name="Rainbow"))
         assert polish.is_rainbow is True
+
+    def test_photo_url_is_blank_when_nothing_is_uploaded(self, polish):
+        # The swatch tile falls back to its placeholder on this.
+        assert polish.photo_url == ""
+
+    def test_photo_url_prefers_the_primary_photo(self, polish, big_image):
+        PolishPhoto.objects.create(polish=polish, image=big_image(name="first.jpg"))
+        primary = PolishPhoto.objects.create(
+            polish=polish, image=big_image(name="second.jpg"), is_primary=True
+        )
+        assert polish.photo_url == primary.image.url
 
 
 class TestPhotos:
@@ -102,11 +82,16 @@ class TestPhotos:
 
 class TestLogEntry:
     def test_title_joins_the_polishes_worn(self, log_entry):
-        assert log_entry.title == "Teal No Lies"
+        assert log_entry.display_title == "Teal No Lies"
+
+    def test_own_title_beats_the_polish_join(self, log_entry):
+        log_entry.title = "Beach day mani"
+        log_entry.save()
+        assert log_entry.display_title == "Beach day mani"
 
     def test_untitled_when_nothing_linked(self, db):
         entry = LogEntry.objects.create(date_worn=datetime.date(2026, 1, 1))
-        assert entry.title == "Untitled entry"
+        assert entry.display_title == "Untitled entry"
 
     def test_last_used_annotation_reflects_the_log(self, polish, log_entry):
         annotated = Polish.objects.with_last_used().get(pk=polish.pk)

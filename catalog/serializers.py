@@ -63,6 +63,9 @@ class PolishSerializer(serializers.ModelSerializer):
     )
     finish_classes = serializers.ListField(child=serializers.CharField(), read_only=True)
     photos = PolishPhotoSerializer(many=True, read_only=True)
+    # The grid tile renders this directly, so it beats making the client dig through
+    # `photos` for the primary one.
+    photo_url = serializers.CharField(read_only=True)
     # Only present when the queryset was annotated (i.e. always, via get_queryset).
     last_used = serializers.DateField(read_only=True, required=False)
     detail_url = serializers.SerializerMethodField()
@@ -71,7 +74,6 @@ class PolishSerializer(serializers.ModelSerializer):
         model = Polish
         fields = [
             "id",
-            "catalog_code",
             "name",
             "brand",
             "brand_name",
@@ -80,7 +82,6 @@ class PolishSerializer(serializers.ModelSerializer):
             "collection_year",
             "description",
             "webshop_link",
-            "hex_color",
             "in_collection",
             "formulas",
             "formula_names",
@@ -90,15 +91,12 @@ class PolishSerializer(serializers.ModelSerializer):
             "tag_names",
             "finish_classes",
             "photos",
+            "photo_url",
             "last_used",
             "detail_url",
             "created_at",
         ]
         read_only_fields = ["created_at"]
-        extra_kwargs = {
-            # Auto-generated when blank, so never require it on write.
-            "catalog_code": {"required": False},
-        }
 
     def get_detail_url(self, obj):
         # Note the underscore: the DRF router already owns the name "polish-detail".

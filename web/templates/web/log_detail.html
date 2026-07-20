@@ -8,7 +8,7 @@
   </a>
   <div>
     <div class="sub">{{ entry.date_worn|date:"d M Y"|upper }}</div>
-    <h2 style="font-size:20px;">{{ entry.title }}</h2>
+    <h2 style="font-size:20px;">{{ entry.display_title }}</h2>
   </div>
   <a href="{% url 'log_update' entry.pk %}" class="icon-btn" aria-label="Edit">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10-10-4-4L4 16v4z"/></svg>
@@ -23,8 +23,7 @@
 {% for row in entry.entry_polishes.all %}
   <a class="logrow" href="{% url 'polish_detail' row.polish.pk %}">
     <div style="width:38px; flex:0 0 auto;">
-      <div class="swatch {% for c in row.polish.finish_classes %}{{ c }} {% endfor %}{% if row.polish.is_rainbow %}is-rainbow{% endif %}"
-           style="background: {{ row.polish.hex_color }};"></div>
+      {% include "web/_swatch.html" with polish=row.polish %}
     </div>
     <div class="logmeta" style="flex:1;">
       <div class="n">{{ row.polish.name }}</div>

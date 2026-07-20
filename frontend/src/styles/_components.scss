@@ -172,7 +172,83 @@
 }
 
 // ---------- detail ----------
-.hero-swatch { width: 148px; height: 148px; margin: 10px auto 16px; }
+// Detail-screen hero. Photos run the full column width — they are the point of the
+// screen — while the placeholder tile stays small, since there is nothing to look at.
+.hero-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--swatch-radius);
+  margin: 10px 0 16px;
+}
+
+// Wrapper exists so the dots can sit on top of the carousel, like the mockup's.
+.photo-strip-wrap {
+  position: relative;
+  margin: 10px 0 16px;
+
+  .photo-strip { margin: 0; }
+}
+
+.photo-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none; // don't block swiping on the photo itself…
+
+  button {
+    pointer-events: auto; // …but the dots stay tappable
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background: rgba(244, 240, 234, 0.45);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    transition: background 0.15s ease, transform 0.15s ease;
+
+    &.on {
+      background: var(--bone);
+      transform: scale(1.25);
+    }
+  }
+}
+
+.photo-strip {
+  display: flex;
+  gap: 10px;
+  // Without this the items stretch to the container's height and aspect-ratio then
+  // widens them back to full width, so the next photo never peeks in.
+  align-items: flex-start;
+  margin: 10px 0 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  // Bleed to the shell edges so the next photo peeks in and reads as swipeable.
+  padding-inline: 1px;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
+  img {
+    // Sized by width rather than flex-basis: an img is a replaced element, and its
+    // automatic minimum size wins over a percentage basis, snapping it back to full
+    // width and killing the peek.
+    flex: 0 0 auto;
+    width: 88%;
+    min-width: 0;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--swatch-radius);
+    scroll-snap-align: center;
+  }
+}
+
+.hero-swatch { width: 148px; margin: 10px auto 16px; }
 
 .detail-name {
   font-family: var(--font-display);
@@ -260,17 +336,6 @@
   position: relative;
   margin-top: 12px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-
-  .cap {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 38px;
-    height: 16px;
-    background: #0b0a0e;
-    border-radius: 4px 4px 0 0;
-  }
 }
 
 .photo-box {
@@ -353,6 +418,96 @@
     font-size: 11px;
     margin-top: 4px;
   }
+}
+
+// Polish form: photos come first and take the top of the screen, since a photo is
+// what a polish looks like. The first slot is the lead shot, the rest sit beside it.
+.photo-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.photo-slot {
+  position: relative;
+
+  &.lead {
+    grid-column: 1 / -1;
+    .photo-drop { aspect-ratio: 4 / 3; }
+  }
+
+  // Marked for deletion: dimmed rather than hidden, so it can be un-ticked.
+  &.is-removed {
+    opacity: 0.35;
+    .photo-drop { filter: grayscale(1); }
+  }
+}
+
+.photo-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  transition: border-color 0.15s ease;
+
+  &:hover { border-color: var(--mauve-dim); }
+  &:focus-within { border-color: var(--pink); border-style: solid; }
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+
+  // The input is the whole tile; the visible label is what you actually click.
+  input[type='file'] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.photo-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--mauve);
+
+  svg { width: 26px; height: 26px; }
+  em {
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+}
+
+.photo-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.photo-flag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mauve);
+
+  input { width: 12px; height: 12px; accent-color: var(--pink); }
+  &.danger { color: var(--pink); }
 }
 
 .formset-row {

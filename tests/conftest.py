@@ -44,7 +44,7 @@ def collection(brand):
 
 @pytest.fixture
 def polish(brand):
-    p = Polish.objects.create(brand=brand, name="Teal No Lies", hex_color="#1f6e6e")
+    p = Polish.objects.create(brand=brand, name="Teal No Lies")
     p.formulas.set(Formula.objects.filter(name__in=["Metallic", "Glitter"]))
     p.colors.set(Color.objects.filter(name="Teal"))
     return p
@@ -52,7 +52,7 @@ def polish(brand):
 
 @pytest.fixture
 def other_polish(other_brand):
-    p = Polish.objects.create(brand=other_brand, name="Cherry Bomb", hex_color="#b3283d")
+    p = Polish.objects.create(brand=other_brand, name="Cherry Bomb")
     p.formulas.set(Formula.objects.filter(name="Creme"))
     p.colors.set(Color.objects.filter(name="Red"))
     return p

@@ -10,6 +10,11 @@ class LogEntryQuerySet(models.QuerySet):
 
 class LogEntry(models.Model):
     date_worn = models.DateField()
+    title = models.CharField(
+        max_length=150,
+        blank=True,
+        help_text="Optional — left blank, the entry is titled after the polishes worn.",
+    )
     notes = models.TextField(blank=True)
     polishes = models.ManyToManyField(
         "catalog.Polish",
@@ -27,8 +32,10 @@ class LogEntry(models.Model):
         return f"{self.date_worn:%d %b %Y}"
 
     @property
-    def title(self):
-        """Human summary of the mani, e.g. "Teal No Lies + Golden Hour"."""
+    def display_title(self):
+        """The user's own title, else a summary of the mani, e.g. "Teal No Lies + Golden Hour"."""
+        if self.title:
+            return self.title
         names = [ep.polish.name for ep in self.entry_polishes.all()]
         if not names:
             return "Untitled entry"
@@ -37,6 +44,12 @@ class LogEntry(models.Model):
     @property
     def primary_photo(self):
         return self.photos.first()
+
+    @property
+    def photo_url(self):
+        """URL of the list row's thumbnail, or "" when nothing was photographed."""
+        photo = self.primary_photo
+        return photo.image.url if photo else ""
 
 
 class LogEntryPolish(models.Model):

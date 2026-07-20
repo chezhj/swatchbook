@@ -1,0 +1,14 @@
+{% comment %}
+The swatch tile. A polish's photo is the face of it; polishes with no photo yet fall
+back to a placeholder that the finish classes still decorate.
+
+  {% include "web/_swatch.html" with polish=row.polish %}
+  {% include "web/_swatch.html" with polish=left extra_class="bottle" %}
+
+The client-rendered equivalent lives in frontend/src/alpine/grid.js — keep them in step.
+{% endcomment %}
+{% if polish.photo_url %}
+  <div class="swatch {{ extra_class }}" style="background-image: url('{{ polish.photo_url }}');"></div>
+{% else %}
+  <div class="swatch is-empty {{ extra_class }} {% for c in polish.finish_classes %}{{ c }} {% endfor %}{% if polish.is_rainbow %}is-rainbow{% endif %}"></div>
+{% endif %}

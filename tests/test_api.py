@@ -34,9 +34,16 @@ class TestPolishApi:
 
     def test_serializer_exposes_swatch_fields(self, auth_client, polish):
         row = auth_client.get("/api/polishes/").json()["results"][0]
-        assert row["hex_color"] == "#1f6e6e"
         assert sorted(row["finish_classes"]) == ["f-glitter", "f-metallic"]
         assert row["detail_url"] == f"/polish/{polish.pk}/"
+        assert row["photo_url"] == ""  # no photo yet, so the grid draws the placeholder
+
+    def test_serializer_exposes_the_primary_photo(self, auth_client, polish, big_image):
+        from catalog.models import PolishPhoto
+
+        photo = PolishPhoto.objects.create(polish=polish, image=big_image(), is_primary=True)
+        row = auth_client.get("/api/polishes/").json()["results"][0]
+        assert row["photo_url"] == photo.image.url
 
     @pytest.mark.parametrize(
         ("query", "expected"),
@@ -90,7 +97,7 @@ class TestPolishApi:
         ]
         assert names == ["Cherry Bomb", "Teal No Lies"]
 
-    def test_create_autogenerates_catalog_code(self, auth_client, brand):
+    def test_creates_a_polish(self, auth_client, brand):
         from catalog.models import Color, Formula
 
         response = auth_client.post(
@@ -98,34 +105,24 @@ class TestPolishApi:
             {
                 "name": "New One",
                 "brand": brand.pk,
-                "hex_color": "#123456",
                 "formulas": [Formula.objects.get(name="Creme").pk],
                 "colors": [Color.objects.get(name="Blue").pk],
             },
             content_type="application/json",
         )
         assert response.status_code == 201
-        assert response.json()["catalog_code"] == "HT-001"
+        assert Polish.objects.get(name="New One").brand == brand
 
     def test_formula_and_color_are_required(self, auth_client, brand):
         # Per the spec's model, only `tags` is blank=True — a polish always has at
         # least one formula and one colour.
         response = auth_client.post(
             "/api/polishes/",
-            {"name": "Bare", "brand": brand.pk, "hex_color": "#123456"},
+            {"name": "Bare", "brand": brand.pk},
             content_type="application/json",
         )
         assert response.status_code == 400
         assert set(response.json()) == {"formulas", "colors"}
-
-    def test_rejects_a_bad_hex_colour(self, auth_client, brand):
-        response = auth_client.post(
-            "/api/polishes/",
-            {"name": "Bad", "brand": brand.pk, "hex_color": "not-a-colour"},
-            content_type="application/json",
-        )
-        assert response.status_code == 400
-        assert "hex_color" in response.json()
 
     def test_patch_updates_a_polish(self, auth_client, polish):
         response = auth_client.patch(
@@ -166,7 +163,36 @@ class TestLogApi:
         )
         assert response.status_code == 201
         entry = LogEntry.objects.get()
-        assert entry.title == "Teal No Lies"
+        assert entry.display_title == "Teal No Lies"
+
+    def test_own_title_round_trips(self, auth_client, polish):
+        response = auth_client.post(
+            "/api/log-entries/",
+            {
+                "date_worn": "2026-07-12",
+                "title": "Beach day mani",
+                "entry_polishes": [{"polish": polish.pk, "role": "base"}],
+            },
+            content_type="application/json",
+        )
+        assert response.status_code == 201
+        assert response.json()["display_title"] == "Beach day mani"
+
+    def test_search_matches_title_polish_and_notes(self, auth_client, polish, log_entry):
+        log_entry.title = "Beach day"
+        log_entry.save()
+
+        for query, expected in [("beach", 1), ("teal", 1), ("tip wear", 0)]:
+            data = auth_client.get(f"/api/log-entries/?search={query}").json()
+            assert data["count"] == expected, query
+
+    def test_filters_by_formula_of_the_polishes_worn(self, auth_client, polish, log_entry):
+        assert auth_client.get("/api/log-entries/?formula=Glitter").json()["count"] == 1
+        assert auth_client.get("/api/log-entries/?formula=Creme").json()["count"] == 0
+
+    def test_filters_by_colour_of_the_polishes_worn(self, auth_client, polish, log_entry):
+        assert auth_client.get("/api/log-entries/?color=teal").json()["count"] == 1
+        assert auth_client.get("/api/log-entries/?color=Red").json()["count"] == 0
 
     def test_filters_by_polish(self, auth_client, polish, other_polish, log_entry):
         data = auth_client.get(f"/api/log-entries/?polish={other_polish.pk}").json()

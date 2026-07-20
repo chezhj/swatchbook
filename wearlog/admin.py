@@ -16,9 +16,9 @@ class LogPhotoInline(admin.TabularInline):
 
 @admin.register(LogEntry)
 class LogEntryAdmin(admin.ModelAdmin):
-    list_display = ["date_worn", "title", "photo_count"]
+    list_display = ["date_worn", "display_title", "photo_count"]
     list_filter = ["date_worn"]
-    search_fields = ["notes", "polishes__name"]
+    search_fields = ["title", "notes", "polishes__name"]
     date_hierarchy = "date_worn"
     inlines = [LogEntryPolishInline, LogPhotoInline]
 

@@ -12,7 +12,7 @@ export default function compareSelection() {
       return this.selected.some((p) => p.id === id);
     },
 
-    toggle(id, name, hex) {
+    toggle(id, name, photo) {
       const index = this.selected.findIndex((p) => p.id === id);
       if (index !== -1) {
         this.selected.splice(index, 1);
@@ -23,7 +23,7 @@ export default function compareSelection() {
         // than silently doing nothing.
         this.selected.shift();
       }
-      this.selected.push({ id, name, hex });
+      this.selected.push({ id, name, photo });
     },
 
     get ready() {

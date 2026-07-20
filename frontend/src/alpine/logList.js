@@ -1,12 +1,14 @@
 import { apiGet } from '../api.js';
 
 /**
- * Collection grid (SCR-01) plus the filter sheet (SCR-02).
+ * Log list (SCR-06) plus its filter sheet — the collection grid's pattern applied to
+ * the log. The server renders the first page; this takes over as soon as a search,
+ * filter or sort changes, refetching /api/log-entries/ and swapping the list.
  *
- * The server renders the first page so there is no empty flash; this takes over as
- * soon as a filter or sort changes, refetching /api/polishes/ and swapping the grid.
+ * `polishId` carries the ?polish= deep link from the polish detail screen, so
+ * filtering within "entries wearing X" keeps working once the client takes over.
  */
-export default function collectionGrid(initialCount = 0) {
+export default function logList(initialCount = 0, polishId = '') {
   return {
     sheetOpen: false,
     loading: false,
@@ -14,14 +16,11 @@ export default function collectionGrid(initialCount = 0) {
     search: '',
     formulas: [],
     colors: [],
-    sort: 'name',
+    sort: '-date_worn',
+    polishId,
     // null = server-rendered markup is still what's on screen.
     results: null,
     resultCount: initialCount,
-
-    get isFiltered() {
-      return this.formulas.length > 0 || this.colors.length > 0 || this.search !== '';
-    },
 
     get activeFilterCount() {
       return this.formulas.length + this.colors.length;
@@ -47,7 +46,7 @@ export default function collectionGrid(initialCount = 0) {
       this.formulas = [];
       this.colors = [];
       this.search = '';
-      this.sort = 'name';
+      this.sort = '-date_worn';
       this.refresh();
     },
 
@@ -55,34 +54,28 @@ export default function collectionGrid(initialCount = 0) {
       this.loading = true;
       this.error = '';
       try {
-        const data = await apiGet('/api/polishes/', {
+        const data = await apiGet('/api/log-entries/', {
           formula: this.formulas,
           color: this.colors,
           search: this.search,
           sort: this.sort,
-          in_collection: 'true',
+          polish: this.polishId,
           page_size: 200,
         });
         this.results = data.results ?? data;
         this.resultCount = data.count ?? this.results.length;
       } catch (err) {
-        this.error = `Couldn't load polishes (${err.message}).`;
+        this.error = `Couldn't load the log (${err.message}).`;
       } finally {
         this.loading = false;
       }
     },
 
-    // The two below mirror web/templates/web/_swatch.html — keep them in step. A photo
-    // is the face of the tile; the finish classes only decorate the empty placeholder.
-    swatchClasses(polish) {
-      if (polish.photo_url) return 'swatch';
-      const classes = ['swatch', 'is-empty', ...(polish.finish_classes || [])];
-      if ((polish.color_names || []).includes('Rainbow')) classes.push('is-rainbow');
-      return classes.join(' ');
-    },
-
-    swatchStyle(polish) {
-      return polish.photo_url ? `background-image: url('${polish.photo_url}')` : '';
+    // "2026-07-12" → "12 JUL 2026", matching the server rows' date format.
+    formatDate(iso) {
+      return new Date(`${iso}T00:00:00`)
+        .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        .toUpperCase();
     },
 
     init() {

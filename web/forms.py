@@ -45,23 +45,16 @@ class PolishForm(forms.ModelForm):
             "name",
             "brand",
             "collection",
-            "hex_color",
             "formulas",
             "colors",
             "description",
             "webshop_link",
-            "catalog_code",
             "in_collection",
         ]
         widgets = {
-            "hex_color": forms.TextInput(attrs={"type": "color"}),
             "description": forms.Textarea(attrs={"rows": 3}),
             "formulas": forms.CheckboxSelectMultiple,
             "colors": forms.CheckboxSelectMultiple,
-            "catalog_code": forms.TextInput(attrs={"placeholder": "Leave blank to auto-generate"}),
-        }
-        help_texts = {
-            "catalog_code": "",  # the placeholder already says it; keep the form tight
         }
 
     def __init__(self, *args, **kwargs):
@@ -117,11 +110,13 @@ class PolishForm(forms.ModelForm):
         polish.tags.set(tags)
 
 
+# Photos are the swatch now, so the form opens with room for a few at once rather than
+# making you save and come back for each one.
 PolishPhotoFormSet = inlineformset_factory(
     Polish,
     PolishPhoto,
     fields=["image", "is_primary"],
-    extra=1,
+    extra=3,
     can_delete=True,
 )
 
@@ -129,10 +124,16 @@ PolishPhotoFormSet = inlineformset_factory(
 class LogEntryForm(forms.ModelForm):
     class Meta:
         model = LogEntry
-        fields = ["date_worn", "notes"]
+        fields = ["title", "date_worn", "notes"]
         widgets = {
+            "title": forms.TextInput(
+                attrs={"placeholder": "Optional — defaults to the polishes worn"}
+            ),
             "date_worn": forms.DateInput(attrs={"type": "date"}),
             "notes": forms.Textarea(attrs={"rows": 3, "placeholder": "How did it wear?"}),
+        }
+        help_texts = {
+            "title": "",  # the placeholder already says it
         }
 
 

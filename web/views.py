@@ -161,8 +161,8 @@ class CompareResultView(TemplateView):
         return context
 
 
-class LogListView(ListView):
-    """SCR-06."""
+class LogListView(VocabularyMixin, ListView):
+    """SCR-06. Same split as the collection: server first paint, Alpine on change."""
 
     template_name = "web/log_list.html"
     context_object_name = "entries"

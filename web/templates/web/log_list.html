@@ -2,41 +2,128 @@
 {% block title %}Log · Swatchbook{% endblock %}
 
 {% block content %}
-<div class="topbar">
-  <div>
-    <div class="sub">{{ total_count }} entr{{ total_count|pluralize:"y,ies" }}</div>
-    <h2>Log</h2>
-  </div>
-  <a href="{% url 'log_create' %}" class="icon-btn" aria-label="New log entry">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
-  </a>
-</div>
+<div x-data="logList({{ total_count }}, '{{ request.GET.polish|default:''|escapejs }}')">
 
-<div class="chiprow">
-  <a class="chip {% if request.GET.sort != 'date_worn' %}on{% endif %}" href="?sort=-date_worn">Newest first</a>
-  <a class="chip {% if request.GET.sort == 'date_worn' %}on{% endif %}" href="?sort=date_worn">Oldest first</a>
-</div>
-
-{% for entry in entries %}
-  <a class="logrow" href="{% url 'log_detail' entry.pk %}">
-    <div class="thumb">
-      {% if entry.primary_photo %}<img src="{{ entry.primary_photo.image.url }}" alt="">{% else %}<div class="streak"></div>{% endif %}
+  <div class="topbar">
+    <div>
+      <div class="sub" x-text="`${resultCount} entr${resultCount === 1 ? 'y' : 'ies'}`">{{ total_count }} entr{{ total_count|pluralize:"y,ies" }}</div>
+      <h2>Log</h2>
     </div>
-    <div class="logmeta" style="flex:1;">
-      <div class="n">{{ entry.title }}</div>
-      <div class="date">{{ entry.date_worn|date:"d M Y"|upper }}</div>
+    <div style="display:flex; gap:8px;">
+      <button type="button" class="icon-btn" @click="$refs.search.focus()" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+      <button type="button" class="icon-btn" @click="sheetOpen = true" aria-label="Filter and sort">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      </button>
+      <a href="{% url 'log_create' %}" class="icon-btn" aria-label="New log entry">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+      </a>
     </div>
-    <span style="color:var(--mauve-dim);">›</span>
-  </a>
-{% empty %}
-  <p class="empty">No entries yet. <a href="{% url 'log_create' %}" class="holo-text">Log your first mani →</a></p>
-{% endfor %}
-
-{% if is_paginated %}
-  <div class="chiprow" style="margin-top:16px; justify-content:center;">
-    {% if page_obj.has_previous %}<a class="chip" href="?page={{ page_obj.previous_page_number }}">← Newer</a>{% endif %}
-    <span class="chip">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}<a class="chip" href="?page={{ page_obj.next_page_number }}">Older →</a>{% endif %}
   </div>
-{% endif %}
+
+  <div class="field" style="margin-bottom:10px;">
+    <input type="search" x-ref="search" x-model="search" placeholder="Search by title, polish, brand or notes…" aria-label="Search log entries">
+  </div>
+
+  <template x-if="activeFilterCount > 0">
+    <div class="chiprow">
+      <button type="button" class="chip on" @click="clearAll()">
+        <span x-text="`${activeFilterCount} filter(s) · clear`"></span>
+      </button>
+    </div>
+  </template>
+
+  <p x-show="error" x-text="error" class="empty" style="color:var(--pink);"></p>
+
+  {# Server-rendered first paint. Replaced by the Alpine list once a filter changes. #}
+  <div x-show="results === null">
+    {% for entry in entries %}
+      <a class="logrow" href="{% url 'log_detail' entry.pk %}">
+        <div class="thumb">
+          {% if entry.primary_photo %}<img src="{{ entry.primary_photo.image.url }}" alt="">{% else %}<div class="streak"></div>{% endif %}
+        </div>
+        <div class="logmeta" style="flex:1;">
+          <div class="n">{{ entry.display_title }}</div>
+          <div class="date">{{ entry.date_worn|date:"d M Y"|upper }}</div>
+        </div>
+        <span style="color:var(--mauve-dim);">›</span>
+      </a>
+    {% empty %}
+      <p class="empty">No entries yet. <a href="{% url 'log_create' %}" class="holo-text">Log your first mani →</a></p>
+    {% endfor %}
+
+    {% if is_paginated %}
+      <div class="chiprow" style="margin-top:16px; justify-content:center;">
+        {% if page_obj.has_previous %}<a class="chip" href="?page={{ page_obj.previous_page_number }}">← Newer</a>{% endif %}
+        <span class="chip">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a class="chip" href="?page={{ page_obj.next_page_number }}">Older →</a>{% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div x-show="results !== null" x-cloak>
+    <template x-for="entry in (results || [])" :key="entry.id">
+      <a class="logrow" :href="entry.detail_url">
+        <div class="thumb">
+          <img :src="entry.photo_url" x-show="entry.photo_url" alt="">
+          <div class="streak" x-show="!entry.photo_url"></div>
+        </div>
+        <div class="logmeta" style="flex:1;">
+          <div class="n" x-text="entry.display_title"></div>
+          <div class="date" x-text="formatDate(entry.date_worn)"></div>
+        </div>
+        <span style="color:var(--mauve-dim);">›</span>
+      </a>
+    </template>
+    <template x-if="results !== null && results.length === 0">
+      <p class="empty">No entries match those filters.</p>
+    </template>
+  </div>
+
+  {# ---------- Filter & sort sheet, same pattern as the collection's ---------- #}
+  <div x-show="sheetOpen" x-cloak
+       style="position:fixed; inset:0; background:var(--ink); z-index:60; overflow-y:auto;"
+       @keydown.escape.window="sheetOpen = false">
+    <div class="shell">
+      <div class="topbar">
+        <h2>Filter &amp; sort</h2>
+        <button type="button" class="icon-btn" @click="sheetOpen = false" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="sub">Formula</div>
+      <div class="chiprow">
+        {% for formula in formulas %}
+          <button type="button" class="chip" :class="{ on: isOn('formulas', '{{ formula.name|escapejs }}') }"
+                  @click="toggle('formulas', '{{ formula.name|escapejs }}')">{{ formula.name }}</button>
+        {% endfor %}
+      </div>
+
+      <div class="sub">Color</div>
+      <div class="chiprow">
+        {% for color in colors %}
+          <button type="button" class="chip" :class="{ on: isOn('colors', '{{ color.name|escapejs }}') }"
+                  @click="toggle('colors', '{{ color.name|escapejs }}')">
+            <span class="dot" style="background: {% if color.hex_color %}{{ color.hex_color }}{% else %}conic-gradient(#d9772f,#d9b23c,#4c7a5e,#1f6e6e,#2e4a8f,#6a4c93,#c2447a){% endif %};"></span>{{ color.name }}
+          </button>
+        {% endfor %}
+      </div>
+
+      <div class="sub">Sort by</div>
+      <div class="chiprow">
+        <button type="button" class="chip" :class="{ on: sort === '-date_worn' }" @click="setSort('-date_worn')">Newest first</button>
+        <button type="button" class="chip" :class="{ on: sort === 'date_worn' }" @click="setSort('date_worn')">Oldest first</button>
+      </div>
+
+      <div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
+        <button type="button" class="btn holo" @click="sheetOpen = false"
+                x-text="loading ? 'Loading…' : `Show ${resultCount} results`">Show results</button>
+        <button type="button" class="btn ghost" @click="clearAll()">Clear all</button>
+      </div>
+    </div>
+  </div>
+
+</div>
 {% endblock %}

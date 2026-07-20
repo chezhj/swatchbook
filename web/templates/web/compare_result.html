@@ -22,10 +22,7 @@
   {% endcomment %}
   <div class="comparecol">
     <div class="lbl">In collection</div>
-    <div class="bottle swatch {% for c in left.finish_classes %}{{ c }} {% endfor %}{% if left.is_rainbow %}is-rainbow{% endif %}"
-         style="background: {{ left.hex_color }}; border-radius:8px 8px 4px 4px;">
-      <span class="cap"></span>
-    </div>
+    {% include "web/_swatch.html" with polish=left extra_class="bottle" %}
     <div style="text-align:center;">
       <div class="detail-name" style="font-size:15px;">{{ left.name }}</div>
       <div class="detail-brand" style="font-size:9px;">{{ left.brand.name }}</div>
@@ -36,16 +33,13 @@
   <div class="comparecol">
     <div class="lbl">{% if right_entry and right_entry.primary_photo %}From log{% else %}In collection{% endif %}</div>
     {% if right_entry and right_entry.primary_photo %}
-      <div class="photo-box"><img src="{{ right_entry.primary_photo.image.url }}" alt="{{ right_entry.title }}"></div>
+      <div class="photo-box"><img src="{{ right_entry.primary_photo.image.url }}" alt="{{ right_entry.display_title }}"></div>
       <div style="text-align:center;">
-        <div class="detail-name" style="font-size:15px;">{{ right_entry.title }}</div>
+        <div class="detail-name" style="font-size:15px;">{{ right_entry.display_title }}</div>
         <div class="detail-brand" style="font-size:9px;">Worn {{ right_entry.date_worn|date:"j M Y" }}</div>
       </div>
     {% else %}
-      <div class="bottle swatch {% for c in right.finish_classes %}{{ c }} {% endfor %}{% if right.is_rainbow %}is-rainbow{% endif %}"
-           style="background: {{ right.hex_color }}; border-radius:8px 8px 4px 4px;">
-        <span class="cap"></span>
-      </div>
+      {% include "web/_swatch.html" with polish=right extra_class="bottle" %}
       <div style="text-align:center;">
         <div class="detail-name" style="font-size:15px;">{{ right.name }}</div>
         <div class="detail-brand" style="font-size:9px;">{{ right.brand.name }}</div>
@@ -66,8 +60,6 @@
        · {% for c in right.colors.all %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}{% endif %}</b></div>
   <div class="row"><span>Collection</span>
     <b>{{ left.collection.name|default:"—" }}{% if right %} · {{ right.collection.name|default:"—" }}{% endif %}</b></div>
-  <div class="row"><span>Code</span>
-    <b class="mono">{{ left.catalog_code }}{% if right %} · {{ right.catalog_code }}{% endif %}</b></div>
 </div>
 
 <div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">

@@ -1,7 +1,8 @@
 """Load the sample collection from the mockup so the UI has real content to render.
 
-A management command rather than a JSON fixture: catalog codes auto-generate, M2M
-links read legibly, and re-running it is a no-op instead of a PK collision.
+A management command rather than a JSON fixture: M2M links read legibly and re-running
+it is a no-op instead of a PK collision. It seeds no photos, so the grid renders the
+placeholder tiles — add photos through the web form to see the real thing.
 
     poetry run python manage.py seed_demo
 """
@@ -26,13 +27,11 @@ COLLECTIONS = [
     ("ILNP", "Summer Neons", 2025),
 ]
 
-# (code, name, brand, hex, formulas, colors, collection, tags, description)
+# (name, brand, formulas, colors, collection, tags, description)
 POLISHES = [
     (
-        "HT-014",
         "Teal No Lies",
         "Holo Taco",
-        "#1f6e6e",
         ["Metallic", "Glitter"],
         ["Teal"],
         "Holo Royalty — Shimmering Secrets",
@@ -41,10 +40,8 @@ POLISHES = [
         "Sea-like depth, one-coat finish.",
     ),
     (
-        "HT-021",
         "Hit the Lights",
         "Holo Taco",
-        "#2e4a8f",
         ["Glitter"],
         ["Blue"],
         "Winter '24",
@@ -52,10 +49,8 @@ POLISHES = [
         "Navy base packed with silver scatter glitter.",
     ),
     (
-        "HT-022",
         "Silent Night",
         "Holo Taco",
-        "#d9b23c",
         ["Holographic", "Glitter"],
         ["Yellow/Gold"],
         "Winter '24",
@@ -63,10 +58,8 @@ POLISHES = [
         "Warm gold holo with a dense scatter.",
     ),
     (
-        "CB-003",
         "Cherry Bomb",
         "Static Nails",
-        "#b3283d",
         ["Creme"],
         ["Red"],
         None,
@@ -74,10 +67,8 @@ POLISHES = [
         "Classic opaque cherry red creme. Two coats, no streaks.",
     ),
     (
-        "CP-007",
         "Citrus Punch",
         "ILNP",
-        "#d9772f",
         ["Chrome"],
         ["Orange"],
         "Summer Neons",
@@ -85,10 +76,8 @@ POLISHES = [
         "Bright orange chrome with a mirror finish.",
     ),
     (
-        "MD-011",
         "Moon Dust",
         "ILNP",
-        "#d8d5ce",
         ["Flakie"],
         ["White/Silver", "Neutrals"],
         None,
@@ -96,10 +85,8 @@ POLISHES = [
         "Sheer pearl base with iridescent flakies. Beautiful as a topper.",
     ),
     (
-        "AD-019",
         "Amethyst Dream",
         "Holo Taco",
-        "#6a4c93",
         ["Holographic"],
         ["Purple"],
         "Holo Royalty — Shimmering Secrets",
@@ -107,10 +94,8 @@ POLISHES = [
         "Linear holographic purple. Rainbow flare in direct sun.",
     ),
     (
-        "BO-002",
         "Blackout",
         "Static Nails",
-        "#1b1a1f",
         ["Chrome"],
         ["Black"],
         None,
@@ -118,10 +103,8 @@ POLISHES = [
         "Jet black chrome. One coat opaque.",
     ),
     (
-        "RR-030",
         "Rainbow Row",
         "ILNP",
-        "#8a8a8a",
         ["Glitter"],
         ["Rainbow"],
         "Summer Neons",
@@ -156,13 +139,11 @@ class Command(BaseCommand):
             )
 
         polishes = {}
-        for code, name, brand, hex_color, formulas, colors, coll, tags, desc in POLISHES:
+        for name, brand, formulas, colors, coll, tags, desc in POLISHES:
             polish, _ = Polish.objects.get_or_create(
-                catalog_code=code,
+                name=name,
+                brand=brands[brand],
                 defaults={
-                    "name": name,
-                    "brand": brands[brand],
-                    "hex_color": hex_color,
                     "description": desc,
                     "collection": collections.get(coll),
                 },

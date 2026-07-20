@@ -4,6 +4,24 @@ from django.db.models import Q
 from .models import Polish
 
 
+def filter_by_names(queryset, relation, values):
+    """OR the values against `<relation>__name`, case-insensitively.
+
+    slugify-tolerant: "holo-taco" should match "Holo Taco". An OR of iexact rather
+    than a built regex — user input never becomes a pattern. Shared with the wear
+    log's filters, which face the same vocabularies through their polishes.
+    """
+    if not values:
+        return queryset
+    cleaned = [v.replace("-", " ").strip() for v in values if v.strip()]
+    if not cleaned:
+        return queryset
+    q = Q()
+    for value in cleaned:
+        q |= Q(**{f"{relation}__name__iexact": value})
+    return queryset.filter(q).distinct()
+
+
 class PolishFilter(filters.FilterSet):
     """Filters matching the query string in spec section 4.
 
@@ -23,27 +41,14 @@ class PolishFilter(filters.FilterSet):
         model = Polish
         fields = ["formula", "color", "tag", "brand", "in_collection"]
 
-    def _filter_names(self, queryset, relation, values):
-        if not values:
-            return queryset
-        # slugify-tolerant: "holo-taco" should match "Holo Taco".
-        cleaned = [v.replace("-", " ").strip() for v in values if v.strip()]
-        if not cleaned:
-            return queryset
-        # OR of iexact rather than a built regex — user input never becomes a pattern.
-        q = Q()
-        for value in cleaned:
-            q |= Q(**{f"{relation}__name__iexact": value})
-        return queryset.filter(q).distinct()
-
     def filter_formula(self, queryset, name, value):
-        return self._filter_names(queryset, "formulas", value)
+        return filter_by_names(queryset, "formulas", value)
 
     def filter_color(self, queryset, name, value):
-        return self._filter_names(queryset, "colors", value)
+        return filter_by_names(queryset, "colors", value)
 
     def filter_tag(self, queryset, name, value):
-        return self._filter_names(queryset, "tags", value)
+        return filter_by_names(queryset, "tags", value)
 
     def filter_brand(self, queryset, name, value):
         if not value:
@@ -56,7 +61,5 @@ class PolishFilter(filters.FilterSet):
         if not value:
             return queryset
         return queryset.filter(
-            Q(name__icontains=value)
-            | Q(brand__name__icontains=value)
-            | Q(catalog_code__icontains=value)
+            Q(name__icontains=value) | Q(brand__name__icontains=value)
         ).distinct()
