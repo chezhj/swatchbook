@@ -179,7 +179,9 @@
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  border-radius: var(--swatch-radius);
+  // The percentage swatch radius is for small tiles; on a full-width photo it turns
+  // into a ~100px curve. Match the buttons' radius instead.
+  border-radius: 14px;
   margin: 10px 0 16px;
 }
 
@@ -223,27 +225,25 @@
 .photo-strip {
   display: flex;
   gap: 10px;
-  // Without this the items stretch to the container's height and aspect-ratio then
-  // widens them back to full width, so the next photo never peeks in.
+  // Default `stretch` would size items to the container height and aspect-ratio would
+  // then widen them past 100%; flex-start keeps each photo pinned to its own width.
   align-items: flex-start;
   margin: 10px 0 16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  // Bleed to the shell edges so the next photo peeks in and reads as swipeable.
-  padding-inline: 1px;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 
   img {
-    // Sized by width rather than flex-basis: an img is a replaced element, and its
-    // automatic minimum size wins over a percentage basis, snapping it back to full
-    // width and killing the peek.
+    // Sized by width rather than flex-basis: an img is a replaced element whose
+    // automatic minimum size overrides a percentage basis. One photo per view, so
+    // only the current image and the dots show — the 10px gap sits off-screen at rest.
     flex: 0 0 auto;
-    width: 88%;
+    width: 100%;
     min-width: 0;
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: var(--swatch-radius);
+    border-radius: 14px; // matches .hero-photo and the buttons
     scroll-snap-align: center;
   }
 }
