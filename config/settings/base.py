@@ -90,7 +90,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "web" / "static"]
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Uploaded photos. In production point DJANGO_MEDIA_ROOT at a directory OUTSIDE the
+# versioned release dirs (the deploy swaps the whole app directory on every release),
+# so the collection's photos persist across deploys and are never sourced from a tag.
+# Left unset, it falls back to the in-repo media/ dir used in development.
+MEDIA_ROOT = env("DJANGO_MEDIA_ROOT", default=str(BASE_DIR / "media"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
