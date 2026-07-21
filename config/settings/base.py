@@ -87,7 +87,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "web" / "static"]
+# web/static is collected by AppDirectoriesFinder (web is an installed app),
+# so it must not also be listed here or collectstatic double-discovers every
+# file and warns about duplicate destination paths.
 
 MEDIA_URL = "/media/"
 # Uploaded photos. In production point DJANGO_MEDIA_ROOT at a directory OUTSIDE the
