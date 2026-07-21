@@ -24,6 +24,7 @@ ruff = "^0.9"
 black = "^25.1"
 pre-commit = "^4.1"
 pytest-cov = "^6.0"
+commitizen = "^4.1"
 
 [build-system]
 requires = ["poetry-core>=2.0"]
@@ -47,3 +48,16 @@ DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py"]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+# Reads/writes the version from [project].version above.
+version_provider = "pep621"
+# Kept in step with [project].version on every bump.
+version_files = ["config/__init__.py:__version__"]
+update_changelog_on_bump = true
+# Runs tests, regenerates requirements.txt and builds the frontend before the bump
+# commit is created, so the tag ships an up-to-date lockfile and static bundle.
+# (make_requirements[.cmd] is on PATH via www_installer/add_to_path.)
+pre_bump_hooks = ["make_requirements"]
