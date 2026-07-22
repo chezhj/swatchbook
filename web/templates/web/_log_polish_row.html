@@ -1,0 +1,45 @@
+{% comment %}
+One "polish worn" row. `subform` is a LogEntryPolishForm (an existing row, or the
+formset's empty_form rendered into a <template> for client-side "add another").
+The polish field is hidden; polishSelect.js draws the search/token UI over it.
+{% endcomment %}
+<div class="formset-row" x-data="polishSelect({ selectedId: '{{ subform.polish.value|default_if_none:'' }}' })">
+  {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
+
+  <div class="field combo" style="margin-bottom:8px;" @click.outside="open = false">
+    <label>Polish</label>
+
+    <div class="combo-token" x-cloak x-show="selected">
+      <span class="combo-token-name" x-text="selected ? selected.label : ''"></span>
+      <span class="combo-token-actions">
+        <button type="button" class="icon-btn sm" @click="clear()" aria-label="Clear polish">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </span>
+    </div>
+
+    <div class="combo-search-wrap" x-cloak x-show="!selected">
+      <input type="text" class="combo-search" x-model="query"
+             @focus="open = true" @input="open = true"
+             placeholder="Search polishes…" autocomplete="off">
+      <div class="combo-menu" x-cloak x-show="open">
+        <template x-for="opt in filtered" :key="opt.id">
+          <button type="button" class="combo-opt" @click="choose(opt)">
+            <span x-text="opt.label"></span>
+          </button>
+        </template>
+        <div class="combo-empty" x-show="filtered.length === 0">No matching polish.</div>
+      </div>
+    </div>
+    {{ subform.polish.errors }}
+  </div>
+
+  <div class="field" style="margin-bottom:8px;">
+    <label for="{{ subform.role.id_for_label }}">{{ subform.role.label }}</label>
+    {{ subform.role }}{{ subform.role.errors }}
+  </div>
+
+  {% if subform.DELETE %}
+    <label class="formset-remove">{{ subform.DELETE }} Remove this polish</label>
+  {% endif %}
+</div>

@@ -30,21 +30,16 @@
 
   <div class="divider"></div>
   <div class="sub">Polishes worn</div>
+  {{ polish_options|json_script:"polish-options" }}
   {{ polish_formset.management_form }}
   <div x-ref="polishesRows">
     {% for subform in polish_formset %}
-      <div class="formset-row">
-        {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
-        {% for field in subform.visible_fields %}
-          <div class="field" style="margin-bottom:8px;">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {{ field.errors }}
-          </div>
-        {% endfor %}
-      </div>
+      {% include "web/_log_polish_row.html" with subform=subform %}
     {% endfor %}
   </div>
+  <template id="polishes-empty">
+    {% include "web/_log_polish_row.html" with subform=polish_formset.empty_form %}
+  </template>
   <button type="button" class="btn ghost" @click="addRow('polishes')" style="margin-bottom:14px;">+ Add another polish</button>
 
   <div class="divider"></div>
@@ -52,18 +47,12 @@
   {{ photo_formset.management_form }}
   <div x-ref="photosRows">
     {% for subform in photo_formset %}
-      <div class="formset-row">
-        {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
-        {% for field in subform.visible_fields %}
-          <div class="field" style="margin-bottom:8px;">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {{ field.errors }}
-          </div>
-        {% endfor %}
-      </div>
+      {% include "web/_log_photo_row.html" with subform=subform %}
     {% endfor %}
   </div>
+  <template id="photos-empty">
+    {% include "web/_log_photo_row.html" with subform=photo_formset.empty_form %}
+  </template>
   <button type="button" class="btn ghost" @click="addRow('photos')" style="margin-bottom:14px;">+ Add another photo</button>
 
   <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">

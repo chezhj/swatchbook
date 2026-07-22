@@ -144,10 +144,23 @@ class LogEntryForm(forms.ModelForm):
         }
 
 
+class LogEntryPolishForm(forms.ModelForm):
+    """One "polish worn" row. The catalog can run to hundreds of polishes, so the
+    picker is a type-to-search combobox (polishSelect.js) rather than a dropdown; the
+    polish field is hidden and the combo writes the chosen id into it."""
+
+    class Meta:
+        model = LogEntryPolish
+        fields = ["polish", "role"]
+        widgets = {
+            "polish": forms.HiddenInput(attrs={"x-ref": "polishId"}),
+        }
+
+
 LogEntryPolishFormSet = inlineformset_factory(
     LogEntry,
     LogEntryPolish,
-    fields=["polish", "role"],
+    form=LogEntryPolishForm,
     extra=1,
     can_delete=True,
 )

@@ -211,6 +211,14 @@ class LogEntryFormMixin:
         else:
             context["polish_formset"] = LogEntryPolishFormSet(instance=instance, prefix="polishes")
             context["photo_formset"] = LogPhotoFormSet(instance=instance, prefix="photos")
+        # The polish picker searches this list client-side, so ship it once with the
+        # page (id + label) rather than paying for the full polish API per row.
+        context["polish_options"] = [
+            {"id": pk, "label": f"{name} — {brand}"}
+            for pk, name, brand in Polish.objects.values_list("id", "name", "brand__name").order_by(
+                "name"
+            )
+        ]
         return context
 
     def form_valid(self, form):
