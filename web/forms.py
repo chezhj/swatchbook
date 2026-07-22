@@ -19,13 +19,19 @@ class PolishForm(forms.ModelForm):
         label="…or add a new brand",
         widget=forms.TextInput(attrs={"placeholder": "e.g. Holo Taco"}),
     )
+    # Collection is picked, created, or edited through a single combobox
+    # (collectionCombo.js). These three fields are the plumbing it writes to: the
+    # existing collection id, or the name/year for one to create on save. They're
+    # hidden — the widget draws the visible search/token/edit UI over them.
     new_collection = forms.CharField(
         required=False,
-        label="…or add a new collection",
-        widget=forms.TextInput(attrs={"placeholder": "e.g. Winter '24"}),
+        widget=forms.HiddenInput(attrs={"x-ref": "newName"}),
     )
     new_collection_year = forms.IntegerField(
-        required=False, label="Collection year", min_value=1900, max_value=2200
+        required=False,
+        min_value=1900,
+        max_value=2200,
+        widget=forms.HiddenInput(attrs={"x-ref": "newYear"}),
     )
     tags_text = forms.CharField(
         required=False,
@@ -55,6 +61,7 @@ class PolishForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 3}),
             "formulas": forms.CheckboxSelectMultiple,
             "colors": forms.CheckboxSelectMultiple,
+            "collection": forms.HiddenInput(attrs={"x-ref": "collectionId"}),
         }
 
     def __init__(self, *args, **kwargs):

@@ -204,7 +204,14 @@ class TestCollectionUnaffected:
         auth_client.post("/polish/new/", base_payload(brand=str(brand.pk)))
         assert "New Polish" in auth_client.get("/").content.decode()
 
-    def test_collection_dropdown_shows_existing_collections(self, auth_client, collection):
+    def test_form_uses_the_collection_combobox(self, auth_client, collection):
+        # Collections are no longer server-rendered as <option>s — the combobox fetches
+        # them per brand from the API — so an existing name isn't in the page HTML.
         html = auth_client.get("/polish/new/").content.decode()
-        assert "Winter" in html
+        assert "collectionCombo(" in html
+        assert "Winter" not in html
+
+    def test_existing_collections_come_from_the_api(self, auth_client, collection):
+        data = auth_client.get(f"/api/collections/?brand={collection.brand_id}").json()
+        assert "Winter" in [c["name"] for c in data["results"]]
         assert Collection.objects.count() == 1

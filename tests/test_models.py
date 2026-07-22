@@ -11,8 +11,8 @@ pytestmark = pytest.mark.django_db
 
 class TestVocabularies:
     def test_seed_migration_loaded_both_lists(self):
-        # Spec section 3: 9 formulas, 12 colours.
-        assert Formula.objects.count() == 9
+        # Spec section 3 seeded 9 formulas and 12 colours; migration 0004 added Thermal.
+        assert Formula.objects.count() == 10
         assert Color.objects.count() == 12
 
     @pytest.mark.parametrize(

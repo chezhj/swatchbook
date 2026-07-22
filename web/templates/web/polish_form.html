@@ -77,17 +77,74 @@
   </div>
 
   <div class="sub">Collection <span style="text-transform:none;">(optional)</span></div>
-  <div class="field">
-    <label for="{{ form.collection.id_for_label }}">Existing collection</label>
-    {{ form.collection }}{{ form.collection.errors }}
-  </div>
-  <div class="field">
-    <label for="{{ form.new_collection.id_for_label }}">{{ form.new_collection.label }}</label>
-    {{ form.new_collection }}{{ form.new_collection.errors }}
-  </div>
-  <div class="field">
-    <label for="{{ form.new_collection_year.id_for_label }}">{{ form.new_collection_year.label }}</label>
-    {{ form.new_collection_year }}{{ form.new_collection_year.errors }}
+  <div class="field combo" x-data="collectionCombo({
+         brandSelectId: '{{ form.brand.id_for_label }}',
+         newBrandId: '{{ form.new_brand.id_for_label }}',
+         selectedId: '{{ form.collection.value|default_if_none:'' }}',
+         selectedName: '{{ object.collection.name|default:'' }}',
+         selectedYear: '{{ object.collection.year|default_if_none:'' }}',
+       })" @click.outside="open = false">
+    {{ form.collection }}{{ form.new_collection }}{{ form.new_collection_year }}
+    {{ form.collection.errors }}{{ form.new_collection.errors }}{{ form.new_collection_year.errors }}
+
+    <div class="combo-disabled" x-cloak x-show="!enabled">Pick a brand first.</div>
+
+    <div class="combo-scope mono" x-cloak x-show="enabled && brandLabel" x-text="brandLabel"></div>
+
+    <template x-if="enabled">
+      <div>
+        <div class="combo-token" x-cloak x-show="selected && !editing">
+          <span class="combo-token-name" x-text="selected ? selected.name : ''"></span>
+          <span class="combo-token-year mono" x-show="selected && selected.year" x-text="selected ? selected.year : ''"></span>
+          <span class="combo-token-actions">
+            <button type="button" class="icon-btn sm" @click="startEdit()" aria-label="Edit collection">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18 10l-4-4L4 16v4zM13 7l4 4"/></svg>
+            </button>
+            <button type="button" class="icon-btn sm" @click="clear()" aria-label="Clear collection">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </span>
+        </div>
+
+        <div class="combo-search-wrap" x-cloak x-show="!selected && !editing">
+          <input type="text" class="combo-search" x-model="query"
+                 @focus="open = true" @input="open = true"
+                 placeholder="Search or add a collection…" autocomplete="off">
+          <div class="combo-menu" x-cloak x-show="open">
+            <template x-for="opt in filtered" :key="opt.id">
+              <button type="button" class="combo-opt" @click="choose(opt)">
+                <span x-text="opt.name"></span>
+                <span class="mono" x-show="opt.year" x-text="opt.year"></span>
+              </button>
+            </template>
+            <div class="combo-empty" x-show="canList && !loading && filtered.length === 0 && !showCreate">
+              No collections for this brand yet.
+            </div>
+            <button type="button" class="combo-create" x-show="showCreate" @click="createFromQuery()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+              Create “<span x-text="query.trim()"></span>”
+            </button>
+          </div>
+        </div>
+
+        <div class="combo-edit" x-cloak x-show="editing">
+          <div class="combo-edit-row">
+            <label>Name
+              <input type="text" x-model="editName" @keydown.enter.prevent="saveEdit()">
+            </label>
+            <label class="yr">Year
+              <input type="number" x-model="editYear" min="1900" max="2200" placeholder="—">
+            </label>
+          </div>
+          <div class="combo-edit-foot">
+            <span class="combo-edit-note" x-show="selected && !selected.isNew">Renames it everywhere it’s used.</span>
+            <span class="combo-err" x-show="error" x-text="error"></span>
+            <button type="button" class="combo-btn ghost" @click="cancelEdit()">Cancel</button>
+            <button type="button" class="combo-btn save" @click="saveEdit()">Save</button>
+          </div>
+        </div>
+      </div>
+    </template>
   </div>
 
   <div class="divider"></div>

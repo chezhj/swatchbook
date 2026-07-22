@@ -547,3 +547,186 @@
   border-radius: 20px;
   white-space: nowrap;
 }
+
+// ---------- collection combobox ----------
+// One field that searches a brand's collections, creates one inline, or edits the
+// chosen one. Driven by collectionCombo.js; the three hidden inputs it writes to sit
+// inside this .combo but never show.
+.combo {
+  position: relative;
+
+  .combo-disabled {
+    font-size: 12.5px;
+    color: var(--mauve-dim);
+    padding: 10px 12px;
+    background: var(--surface2);
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+  }
+
+  .combo-scope {
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--mauve-dim);
+    margin-bottom: 6px;
+  }
+
+  .icon-btn.sm {
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    color: var(--mauve);
+    &:hover { background: var(--surface); color: var(--bone); }
+    svg { width: 15px; height: 15px; }
+  }
+}
+
+// A picked collection, shown as a filled row with edit / clear on the right.
+.combo-token {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--pink);
+  border-radius: 12px;
+  padding: 6px 8px 6px 12px;
+
+  .combo-token-name { font-size: 13px; color: var(--bone); }
+  .combo-token-year { font-size: 11px; color: var(--mauve-dim); }
+  .combo-token-actions { margin-left: auto; display: flex; gap: 2px; }
+}
+
+.combo-search-wrap { position: relative; }
+
+.combo-search {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--bone);
+  font-family: var(--font-ui);
+  font-size: 13px;
+
+  &:focus { outline: none; border-color: var(--pink); }
+  &::placeholder { color: var(--mauve-dim); }
+}
+
+.combo-menu {
+  position: absolute;
+  z-index: 40;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.7);
+  max-height: 260px;
+  overflow-y: auto;
+
+  .combo-opt {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 12px;
+    background: transparent;
+    border: none;
+    color: var(--bone);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+
+    span:last-child { color: var(--mauve-dim); font-size: 11px; }
+    &:hover { background: var(--surface2); }
+  }
+
+  .combo-empty {
+    padding: 9px 12px;
+    color: var(--mauve-dim);
+    font-size: 12px;
+  }
+
+  .combo-create {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--line);
+    color: var(--cyan);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+
+    svg { width: 15px; height: 15px; }
+    &:hover { background: var(--surface2); }
+  }
+}
+
+.combo-edit {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+
+  .combo-edit-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    label {
+      flex: 2;
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--mauve);
+      &.yr { flex: 1; }
+    }
+
+    input {
+      width: 100%;
+      margin-top: 4px;
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--bone);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      &:focus { outline: none; border-color: var(--pink); }
+    }
+  }
+
+  .combo-edit-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .combo-edit-note { font-size: 10px; color: var(--mauve-dim); line-height: 1.4; }
+    .combo-err { font-size: 10.5px; color: var(--pink); line-height: 1.4; }
+    .combo-btn { margin-left: 0; }
+    .combo-btn:first-of-type { margin-left: auto; }
+  }
+}
+
+.combo-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  cursor: pointer;
+
+  &.ghost { background: transparent; color: var(--mauve); &:hover { color: var(--bone); } }
+  &.save { background: var(--cyan); color: var(--ink); font-weight: 500; }
+}
