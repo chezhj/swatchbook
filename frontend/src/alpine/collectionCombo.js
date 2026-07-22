@@ -16,13 +16,7 @@ import { apiGet, apiSend } from '../api.js';
  * PATCH to the API, because it changes a shared record; editing a not-yet-saved one
  * just updates newName/newYear.
  */
-export default function collectionCombo({
-  brandSelectId,
-  newBrandId,
-  selectedId = '',
-  selectedName = '',
-  selectedYear = '',
-}) {
+export default function collectionCombo({ brandSelectId, newBrandId, selectedId = '' }) {
   return {
     brandId: '',
     brandLabel: '',
@@ -44,10 +38,14 @@ export default function collectionCombo({
       if (newBrand) newBrand.addEventListener('input', sync);
 
       if (selectedId) {
+        // Name/year come from data-* attributes rather than the x-data literal: a
+        // collection name like "Winter '24" would break a JS string but is fine in an
+        // HTML attribute the browser hands back verbatim.
+        const ds = this.$root.dataset;
         this.selected = {
           id: Number(selectedId),
-          name: selectedName,
-          year: selectedYear || null,
+          name: ds.selectedName || '',
+          year: ds.selectedYear || null,
         };
       }
       this.syncBrand(brandSel, newBrand, true);

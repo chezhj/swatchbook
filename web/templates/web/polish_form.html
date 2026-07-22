@@ -81,9 +81,10 @@
          brandSelectId: '{{ form.brand.id_for_label }}',
          newBrandId: '{{ form.new_brand.id_for_label }}',
          selectedId: '{{ form.collection.value|default_if_none:'' }}',
-         selectedName: '{{ object.collection.name|default:'' }}',
-         selectedYear: '{{ object.collection.year|default_if_none:'' }}',
-       })" @click.outside="open = false">
+       })"
+       data-selected-name="{{ object.collection.name|default:'' }}"
+       data-selected-year="{{ object.collection.year|default_if_none:'' }}"
+       @click.outside="open = false">
     {{ form.collection }}{{ form.new_collection }}{{ form.new_collection_year }}
     {{ form.collection.errors }}{{ form.new_collection.errors }}{{ form.new_collection_year.errors }}
 
