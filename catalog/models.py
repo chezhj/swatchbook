@@ -154,7 +154,7 @@ class Polish(models.Model):
 
 class PolishPhoto(models.Model):
     polish = models.ForeignKey(Polish, on_delete=models.CASCADE, related_name="photos")
-    image = models.ImageField(upload_to="polishes/")
+    image = models.ImageField(upload_to="polishes/", max_length=250)
     is_primary = models.BooleanField(default=False)
 
     class Meta:

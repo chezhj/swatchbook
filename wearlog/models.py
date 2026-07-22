@@ -75,7 +75,7 @@ class LogEntryPolish(models.Model):
 
 class LogPhoto(models.Model):
     log_entry = models.ForeignKey(LogEntry, on_delete=models.CASCADE, related_name="photos")
-    image = models.ImageField(upload_to="log/")
+    image = models.ImageField(upload_to="log/", max_length=250)
 
     class Meta:
         ordering = ["id"]
