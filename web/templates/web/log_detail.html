@@ -15,9 +15,40 @@
   </a>
 </div>
 
-{% for photo in entry.photos.all %}
-  <img src="{{ photo.image.url }}" alt="" style="width:100%; border-radius:16px; margin-bottom:10px;">
-{% endfor %}
+{% comment %}
+Photos as the polish detail's carousel: square, scroll-snapped, dots when there's more
+than one. Tapping a photo opens it full-size in a lightbox; tapping again closes it.
+{% endcomment %}
+{% with photos=entry.photos.all %}
+{% if photos %}
+  <div x-data="{ full: null }">
+    {% if photos|length > 1 %}
+      <div class="photo-strip-wrap" x-data="photoStrip({{ photos|length }})">
+        <div class="photo-strip" x-ref="strip" @scroll.passive="onScroll()">
+          {% for photo in photos %}
+            <img src="{{ photo.image.url }}" alt="" @click="full = $el.src">
+          {% endfor %}
+        </div>
+        <div class="photo-dots" role="tablist" aria-label="Photos">
+          {% for photo in photos %}
+            <button type="button" :class="{ on: active === {{ forloop.counter0 }} }"
+                    @click="goTo({{ forloop.counter0 }})"
+                    aria-label="Photo {{ forloop.counter }}"></button>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      {% for photo in photos %}
+        <img class="hero-photo" src="{{ photo.image.url }}" alt="" @click="full = $el.src">
+      {% endfor %}
+    {% endif %}
+
+    <div class="lightbox" x-show="full" x-cloak @click="full = null">
+      <img :src="full" alt="">
+    </div>
+  </div>
+{% endif %}
+{% endwith %}
 
 <div class="sub" style="margin-top:12px;">Polishes</div>
 {% for row in entry.entry_polishes.all %}

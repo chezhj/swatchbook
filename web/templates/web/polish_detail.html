@@ -16,23 +16,32 @@
 Photos lead the detail screen: a gallery when there is more than one, the single shot
 when there isn't, and the placeholder tile only for polishes not photographed yet.
 {% endcomment %}
-{% if polish.photos.all|length > 1 %}
-  <div class="photo-strip-wrap" x-data="photoStrip({{ polish.photos.all|length }})">
-    <div class="photo-strip" x-ref="strip" @scroll.passive="onScroll()">
-      {% for photo in polish.photos.all %}
-        <img src="{{ photo.image.url }}" alt="{{ polish.name }}">
-      {% endfor %}
-    </div>
-    <div class="photo-dots" role="tablist" aria-label="Photos">
-      {% for photo in polish.photos.all %}
-        <button type="button" :class="{ on: active === {{ forloop.counter0 }} }"
-                @click="goTo({{ forloop.counter0 }})"
-                aria-label="Photo {{ forloop.counter }}"></button>
-      {% endfor %}
+{% if polish.photos.all|length > 1 or polish.photo_url %}
+  {# Tapping a photo opens it full-size in a lightbox; tapping again closes it. #}
+  <div x-data="{ full: null }">
+    {% if polish.photos.all|length > 1 %}
+      <div class="photo-strip-wrap" x-data="photoStrip({{ polish.photos.all|length }})">
+        <div class="photo-strip" x-ref="strip" @scroll.passive="onScroll()">
+          {% for photo in polish.photos.all %}
+            <img src="{{ photo.image.url }}" alt="{{ polish.name }}" @click="full = $el.src">
+          {% endfor %}
+        </div>
+        <div class="photo-dots" role="tablist" aria-label="Photos">
+          {% for photo in polish.photos.all %}
+            <button type="button" :class="{ on: active === {{ forloop.counter0 }} }"
+                    @click="goTo({{ forloop.counter0 }})"
+                    aria-label="Photo {{ forloop.counter }}"></button>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <img class="hero-photo" src="{{ polish.photo_url }}" alt="{{ polish.name }}" @click="full = $el.src">
+    {% endif %}
+
+    <div class="lightbox" x-show="full" x-cloak @click="full = null">
+      <img :src="full" alt="">
     </div>
   </div>
-{% elif polish.photo_url %}
-  <img class="hero-photo" src="{{ polish.photo_url }}" alt="{{ polish.name }}">
 {% else %}
   <div class="hero-swatch">{% include "web/_swatch.html" %}</div>
 {% endif %}

@@ -250,6 +250,30 @@
 
 .hero-swatch { width: 148px; margin: 10px auto 16px; }
 
+// Carousel photos are square-cropped; the lightbox shows the whole frame, uncropped,
+// over the full viewport. Tapping anywhere on it closes (cursor hints at that).
+.photo-strip img,
+.hero-photo { cursor: zoom-in; }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(10, 8, 14, 0.93);
+  cursor: zoom-out;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+}
+
 .detail-name {
   font-family: var(--font-display);
   font-style: italic;
