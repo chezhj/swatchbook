@@ -30,9 +30,43 @@ REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [  # noqa: F405
     "rest_framework.renderers.JSONRenderer",
 ]
 
+# Error mail. Only the SMTP password is a secret and lives in .env; host, port,
+# mailbox and From address are plain config. Verify the host/mailbox match what
+# cPanel gives you (Email Accounts → Connect Devices shows the real values).
+ADMINS = [("Admin", "h@vdwaal.net")]
+SERVER_EMAIL = "swatchbook@vdwaal.net"  # From address on error mail
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "mail.vdwaal.net"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "noreply@vdwaal.net"
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = True
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "filters": {
+        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+        # Emails unhandled 500 tracebacks to ADMINS. require_debug_false is
+        # belt-and-suspenders: no mail even if DEBUG is ever flipped on here.
+        "mail_admins": {
+            "class": "django.utils.log.AdminEmailHandler",
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "include_html": True,
+        },
+    },
     "root": {"handlers": ["console"], "level": "WARNING"},
+    "loggers": {
+        "django.request": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
 }
