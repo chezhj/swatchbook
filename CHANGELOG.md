@@ -1,3 +1,18 @@
+## v0.3.0 (2026-07-23)
+
+### Feat
+
+- **web**: tap a detail photo to view it full-size
+- **web**: make the log's polish picker a type-to-search combobox
+- **catalog,wearlog**: allow longer image filenames (250 chars)
+- **web**: replace collection fields with a brand-scoped combobox
+- **catalog**: add Thermal formula with a thermochromic swatch finish
+
+### Fix
+
+- **web**: keep the collection combo working for quoted names
+- **config**: stop collectstatic double-collecting web/static
+
 ## v0.2.0 (2026-07-21)
 
 ### Feat
