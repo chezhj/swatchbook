@@ -90,6 +90,18 @@ class TestPolishApi:
         names = [r["name"] for r in auth_client.get("/api/polishes/?sort=brand").json()["results"]]
         assert names == ["Teal No Lies", "Cherry Bomb"]  # Holo Taco before Static Nails
 
+    def test_sort_by_collection_date_puts_collectionless_last(
+        self, auth_client, polish, other_polish, collection
+    ):
+        # `polish` is in a 2024 collection; `other_polish` has no collection (year = NULL).
+        polish.collection = collection
+        polish.save()
+        names = [
+            r["name"]
+            for r in auth_client.get("/api/polishes/?sort=-collection_date").json()["results"]
+        ]
+        assert names == ["Teal No Lies", "Cherry Bomb"]
+
     def test_unknown_sort_falls_back_to_name(self, auth_client, polish, other_polish):
         names = [
             r["name"]

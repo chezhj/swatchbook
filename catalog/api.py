@@ -24,6 +24,16 @@ POLISH_SORTS = {
 }
 DEFAULT_POLISH_SORT = ["name"]
 
+# Sorts over nullable fields. NULLs go to the end regardless of direction, so
+# never-worn / collection-less polishes settle at the bottom rather than clumping
+# at the top under a descending sort. `name` is the tiebreak throughout.
+NULLS_LAST_SORTS = {
+    "last_used": F("last_used").asc(nulls_last=True),
+    "-last_used": F("last_used").desc(nulls_last=True),
+    "collection_date": F("collection__year").asc(nulls_last=True),
+    "-collection_date": F("collection__year").desc(nulls_last=True),
+}
+
 
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all()
@@ -69,11 +79,7 @@ class PolishViewSet(viewsets.ModelViewSet):
 
         sort = self.request.query_params.get("sort", "")
 
-        # Never-worn polishes have last_used = NULL; push them to the end either way
-        # rather than letting them clump at the top.
-        if sort == "-last_used":
-            return qs.order_by(F("last_used").desc(nulls_last=True), "name")
-        if sort == "last_used":
-            return qs.order_by(F("last_used").asc(nulls_last=True), "name")
+        if sort in NULLS_LAST_SORTS:
+            return qs.order_by(NULLS_LAST_SORTS[sort], "name")
 
         return qs.order_by(*POLISH_SORTS.get(sort, DEFAULT_POLISH_SORT))

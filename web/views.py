@@ -34,11 +34,13 @@ class CollectionView(VocabularyMixin, ListView):
     context_object_name = "polishes"
 
     def get_queryset(self):
+        # Recently-added first — matches the grid's default sort so the server paint and
+        # the Alpine takeover agree.
         return (
             Polish.objects.with_related()
             .with_last_used()
             .filter(in_collection=True)
-            .order_by("name")
+            .order_by("-created_at")
         )
 
     def get_context_data(self, **kwargs):

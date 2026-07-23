@@ -54,6 +54,31 @@
   margin-top: 6px;
 }
 
+// Grouped-grid headers (brand / collection). The brand is the coarser band, so it
+// sits larger and with more air above it; the collection sub-header nests under it.
+.group-brand {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 20px;
+  margin: 30px 0 2px;
+}
+
+.group-collection {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--bone);
+  margin: 18px 0 2px;
+}
+
+.group-year {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--mauve);
+}
+
 .chiprow {
   display: flex;
   flex-wrap: wrap;

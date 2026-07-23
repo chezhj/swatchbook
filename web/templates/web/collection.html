@@ -48,18 +48,33 @@
     {% endfor %}
   </div>
 
-  <div class="grid3" x-show="results !== null" x-cloak>
-    <template x-for="polish in (results || [])" :key="polish.id">
-      <a class="swatch-cell" :href="polish.detail_url">
-        <div style="position:relative; width:100%;">
-          <div :class="swatchClasses(polish)" :style="swatchStyle(polish)"></div>
+  <div x-show="results !== null" x-cloak>
+    <template x-for="section in sections" :key="section.key">
+      <div>
+        <template x-if="section.brandLabel">
+          <h3 class="group-brand" x-text="section.brandLabel"></h3>
+        </template>
+        <template x-if="section.collLabel">
+          <div class="group-collection">
+            <span x-text="section.collLabel"></span>
+            <span class="group-year" x-show="section.collYear" x-text="section.collYear"></span>
+          </div>
+        </template>
+        <div class="grid3">
+          <template x-for="polish in section.polishes" :key="polish.id">
+            <a class="swatch-cell" :href="polish.detail_url">
+              <div style="position:relative; width:100%;">
+                <div :class="swatchClasses(polish)" :style="swatchStyle(polish)"></div>
+              </div>
+              <div class="name" x-text="polish.name"></div>
+              <div class="brand" x-text="polish.brand_name"></div>
+            </a>
+          </template>
         </div>
-        <div class="name" x-text="polish.name"></div>
-        <div class="brand" x-text="polish.brand_name"></div>
-      </a>
+      </div>
     </template>
     <template x-if="results !== null && results.length === 0">
-      <p class="empty" style="grid-column:1/-1;">No polishes match those filters.</p>
+      <p class="empty">No polishes match those filters.</p>
     </template>
   </div>
 
@@ -98,7 +113,15 @@
         <button type="button" class="chip" :class="{ on: sort === '-last_used' }" @click="setSort('-last_used')">Last used</button>
         <button type="button" class="chip" :class="{ on: sort === 'name' }" @click="setSort('name')">Name</button>
         <button type="button" class="chip" :class="{ on: sort === 'brand' }" @click="setSort('brand')">Brand</button>
+        <button type="button" class="chip" :class="{ on: sort === '-collection_date' }" @click="setSort('-collection_date')">Collection date</button>
         <button type="button" class="chip" :class="{ on: sort === '-created_at' }" @click="setSort('-created_at')">Recently added</button>
+      </div>
+
+      <div class="sub">Group by</div>
+      <div class="chiprow">
+        <button type="button" class="chip" :class="{ on: group === 'none' }" @click="setGroup('none')">None</button>
+        <button type="button" class="chip" :class="{ on: group === 'brand' }" @click="setGroup('brand')">Brand</button>
+        <button type="button" class="chip" :class="{ on: group === 'collection' }" @click="setGroup('collection')">Collection</button>
       </div>
 
       <div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
