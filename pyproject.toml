@@ -1,6 +1,6 @@
 [project]
 name = "swatchbook"
-version = "0.3.0"
+version = "0.4.0"
 description = "Personal nail polish catalog and wear log"
 authors = [{ name = "h", email = "h@vdwaal.net" }]
 readme = "README.md"

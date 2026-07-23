@@ -1,3 +1,10 @@
+## v0.4.0 (2026-07-23)
+
+### Feat
+
+- **web**: group the collection grid and persist filters per session
+- **config**: email admins on unhandled 500 errors in production
+
 ## v0.3.0 (2026-07-23)
 
 ### Feat
