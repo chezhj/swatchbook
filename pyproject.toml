@@ -61,3 +61,4 @@ update_changelog_on_bump = true
 # commit is created, so the tag ships an up-to-date lockfile and static bundle.
 # (make_requirements[.cmd] is on PATH via www_installer/add_to_path.)
 pre_bump_hooks = ["make_requirements"]
+post_bump_hooks = ["push_all.cmd"]
