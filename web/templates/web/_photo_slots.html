@@ -1,0 +1,17 @@
+{% comment %}
+The photo grid shared by the polish and log forms: a tile per formset row, each with a
+live pre-save preview (photoTile), plus a trailing empty tile that auto-grows —
+photoSlots appends a fresh one as soon as the last placeholder gets a file, so photos
+can be added without saving first. `with_primary` turns on the per-photo "Main" flag
+(polish photos only). Both formsets use the "photos" prefix.
+{% endcomment %}
+{{ formset.management_form }}
+{{ formset.non_form_errors }}
+<div class="photo-slots" x-data="photoSlots('photos')" @change="reconcile()">
+  {% for subform in formset %}
+    {% include "web/_photo_slot.html" with subform=subform lead=forloop.first with_primary=with_primary %}
+  {% endfor %}
+  <template x-ref="tpl">
+    {% include "web/_photo_slot.html" with subform=formset.empty_form lead=False with_primary=with_primary %}
+  </template>
+</div>

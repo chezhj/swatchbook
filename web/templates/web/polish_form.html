@@ -20,45 +20,7 @@
   the screen rather than a footnote below the metadata. The first tile is the large
   one — it becomes the grid thumbnail unless another is marked primary.
   {% endcomment %}
-  {{ photo_formset.management_form }}
-  {{ photo_formset.non_form_errors }}
-  <div class="photo-slots">
-    {% for subform in photo_formset %}
-      <div class="photo-slot{% if forloop.first %} lead{% endif %}"
-           x-data="photoTile('{% if subform.instance.pk %}{{ subform.instance.image.url }}{% endif %}')"
-           :class="{ 'is-removed': removed }">
-        {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
-
-        <label class="photo-drop">
-          <img :src="preview" x-show="!isEmpty" x-cloak alt="">
-          <span class="photo-add" x-show="isEmpty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            {% if forloop.first %}<em>Add a photo</em>{% endif %}
-          </span>
-          <input type="file" accept="image/*" @change="pick($event)"
-                 name="{{ subform.image.html_name }}" id="{{ subform.image.id_for_label }}">
-        </label>
-
-        <div class="photo-actions" x-show="!isEmpty" x-cloak>
-          <label class="photo-flag">
-            <input type="checkbox" name="{{ subform.is_primary.html_name }}"
-                   id="{{ subform.is_primary.id_for_label }}"
-                   {% if subform.instance.is_primary %}checked{% endif %}>
-            <span>Main</span>
-          </label>
-          {% if subform.instance.pk %}
-            <label class="photo-flag danger">
-              <input type="checkbox" x-model="removed"
-                     name="{{ subform.DELETE.html_name }}" id="{{ subform.DELETE.id_for_label }}">
-              <span>Remove</span>
-            </label>
-          {% endif %}
-        </div>
-
-        {{ subform.image.errors }}
-      </div>
-    {% endfor %}
-  </div>
+  {% include "web/_photo_slots.html" with formset=photo_formset with_primary=True %}
 
   <div class="field">
     <label for="{{ form.name.id_for_label }}">Name</label>

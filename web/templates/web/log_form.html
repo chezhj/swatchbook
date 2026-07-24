@@ -44,16 +44,7 @@
 
   <div class="divider"></div>
   <div class="sub">Photos</div>
-  {{ photo_formset.management_form }}
-  <div x-ref="photosRows">
-    {% for subform in photo_formset %}
-      {% include "web/_log_photo_row.html" with subform=subform %}
-    {% endfor %}
-  </div>
-  <template id="photos-empty">
-    {% include "web/_log_photo_row.html" with subform=photo_formset.empty_form %}
-  </template>
-  <button type="button" class="btn ghost" @click="addRow('photos')" style="margin-bottom:14px;">+ Add another photo</button>
+  {% include "web/_photo_slots.html" with formset=photo_formset with_primary=False %}
 
   <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
     <button type="submit" class="btn holo">Save entry</button>

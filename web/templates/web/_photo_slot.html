@@ -1,0 +1,41 @@
+{% comment %}
+One photo tile, shared by the polish and log forms. `subform` is a photo formset form
+(an existing row, or the formset's empty_form rendered into a <template> for the
+client-side auto-grow). `lead` makes it the big lead shot; `with_primary` renders the
+"Main" flag — polish photos have one, log photos don't.
+{% endcomment %}
+<div class="photo-slot{% if lead %} lead{% endif %}"
+     x-data="photoTile('{% if subform.instance.pk %}{{ subform.instance.image.url }}{% endif %}')"
+     :class="{ 'is-removed': removed }">
+  {% for hidden in subform.hidden_fields %}{{ hidden }}{% endfor %}
+
+  <label class="photo-drop">
+    <img :src="preview" x-show="!isEmpty" x-cloak alt="">
+    <span class="photo-add" x-show="isEmpty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+      {% if lead %}<em>Add a photo</em>{% endif %}
+    </span>
+    <input type="file" accept="image/*" @change="pick($event)"
+           name="{{ subform.image.html_name }}" id="{{ subform.image.id_for_label }}">
+  </label>
+
+  <div class="photo-actions" x-show="!isEmpty" x-cloak>
+    {% if with_primary %}
+      <label class="photo-flag">
+        <input type="checkbox" name="{{ subform.is_primary.html_name }}"
+               id="{{ subform.is_primary.id_for_label }}"
+               {% if subform.instance.is_primary %}checked{% endif %}>
+        <span>Main</span>
+      </label>
+    {% endif %}
+    {% if subform.instance.pk %}
+      <label class="photo-flag danger">
+        <input type="checkbox" x-model="removed"
+               name="{{ subform.DELETE.html_name }}" id="{{ subform.DELETE.id_for_label }}">
+        <span>Remove</span>
+      </label>
+    {% endif %}
+  </div>
+
+  {{ subform.image.errors }}
+</div>
