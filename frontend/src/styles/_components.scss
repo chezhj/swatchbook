@@ -45,6 +45,15 @@
 
   svg { width: 17px; height: 17px; }
   &:hover { background: #332e3d; }
+
+  // Quick-save: the accent-filled counterpart to the cancel button, top-right of
+  // the create/edit forms. Submits its form via the button's `form` attribute.
+  &.save {
+    background: var(--cyan);
+    border-color: var(--cyan);
+    color: var(--ink);
+    &:hover { background: var(--cyan); filter: brightness(0.92); }
+  }
 }
 
 .grid3 {

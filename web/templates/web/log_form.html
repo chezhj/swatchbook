@@ -7,7 +7,9 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
   </a>
   <h2>{{ heading }}</h2>
-  <span style="width:34px;"></span>
+  <button type="submit" form="log-form" class="icon-btn save" aria-label="Save entry" title="Save">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 13l4 4L19 7"/></svg>
+  </button>
 </div>
 
 {% if prefill_polish %}
@@ -16,7 +18,7 @@
   </p>
 {% endif %}
 
-<form method="post" enctype="multipart/form-data" x-data="logEntryForm()">
+<form id="log-form" method="post" enctype="multipart/form-data" x-data="logEntryForm()">
   {% csrf_token %}
 
   {{ form.non_field_errors }}
