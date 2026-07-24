@@ -41,8 +41,9 @@ EMAIL_HOST = "mail.vdwaal.net"
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "noreply@vdwaal.net"
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = "Swatchbook<noreply@vdwaal.net>"
 EMAIL_USE_TLS = True
-EMAIL_USE_SSL = True
+EMAIL_USE_SSL = False
 
 LOGGING = {
     "version": 1,
