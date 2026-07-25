@@ -77,10 +77,16 @@ is left enabled (F1's upgrade keeps it).
 by Django design, so a hard cap on total photo size should be set at the web server
 (Apache `LimitRequestBody`).
 
-### F4 — No Content-Security-Policy header · Low
-All other security headers are present, but there is no `Content-Security-Policy`. XSS risk is
-already low (autoescaping, no user `mark_safe`), so CSP here is defense-in-depth.
-**Fix:** add a CSP (via `django-csp` or a middleware/header). Start report-only, then enforce.
+### F4 — No Content-Security-Policy header · Low  ✅ FIXED
+All other security headers were present but there was no `Content-Security-Policy`.
+**Fixed:** added `web.middleware.ContentSecurityPolicyMiddleware`, which attaches a static
+policy from `settings.CSP_POLICY` (set in `prod.py`, unset elsewhere so the Vite dev server is
+untouched). The policy locks `script`/`frame`/`object`/`connect` to `'self'` (only Google Fonts
+is allowed for CSS/fonts); `'unsafe-eval'` is required by Alpine and `'unsafe-inline'` by the
+templates' inline `style="…"` attributes, so those remain but everything else is origin-locked.
+**Verified** in a browser under the enforced policy: header present, Alpine 3.15 runs, fonts
+load, the grid/API-filter/photo-preview paths all work, and zero CSP violations across login,
+collection, the photo form, and detail pages.
 
 ### F9 — Malformed multipart POST to `/login/` returns 500 · Low  · host-level, needs investigation
 **Found in Phase B, re-characterised on follow-up.** A malformed `multipart/form-data` POST to
@@ -129,7 +135,7 @@ beyond ensuring the real prod key is long/random (can't be verified black-box).
 
 - ✅ **F1** — Pillow upgraded to 12.3 (commit `637cc35`).
 - ✅ **F2** + **F3** — django-axes login lockout; `DATA_UPLOAD_MAX_MEMORY_SIZE` cap.
-- **Open — app:** **F4** add CSP.
+- ✅ **F4** — Content-Security-Policy header (`ContentSecurityPolicyMiddleware`).
 - **Open — host-side:** **F9** (investigate the Apache/Passenger 500 on malformed multipart);
   **F3** tail (Apache `LimitRequestBody` for file-body size); **F5–F7** banners / panel / admin
   path. **F8** is mitigated, no action.
