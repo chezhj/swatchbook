@@ -125,6 +125,12 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "collection"
 LOGOUT_REDIRECT_URL = "login"
 
+# Where the Django admin is mounted. Defaults to the usual admin/ for local work; in
+# production set DJANGO_ADMIN_URL in .env to an unguessable path so the default /admin/
+# is a 404 to the scanners that hammer it. The secret path lives in .env, never in git.
+# Normalised so a value with or without slashes still resolves.
+ADMIN_URL = env("DJANGO_ADMIN_URL", default="admin/").strip("/") + "/"
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",

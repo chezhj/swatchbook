@@ -124,7 +124,9 @@ counting rows, so deleting a polish can't cause a later collision.
 
 1. Set the Passenger startup file to `passenger_wsgi.py`.
 2. Set `DJANGO_SETTINGS_MODULE=config.settings.prod` plus `DJANGO_SECRET_KEY` and
-   `DJANGO_ALLOWED_HOSTS` in the app environment (or `.env`).
+   `DJANGO_ALLOWED_HOSTS` in the app environment (or `.env`). Optionally set
+   `DJANGO_ADMIN_URL` to an unguessable path (e.g. `manage-3f9a2b/`) so the default
+   `/admin/` 404s; you then reach the admin at that path.
 3. `poetry install --only main`, `manage.py migrate`, `manage.py collectstatic`.
 4. Build the frontend (`npm run build`) and ship `web/static/dist/`.
 5. Point the web server at `MEDIA_ROOT` for `/media/`.

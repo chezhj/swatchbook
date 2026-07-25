@@ -4,7 +4,8 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    # Path comes from settings.ADMIN_URL (env-configurable); default "admin/".
+    path(settings.ADMIN_URL, admin.site.urls),
     path("api/", include("config.api_urls")),
     path("", include("web.urls")),
 ]
