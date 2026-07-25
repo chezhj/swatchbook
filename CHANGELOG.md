@@ -1,3 +1,20 @@
+## v0.5.0 (2026-07-25)
+
+### Feat
+
+- **catalog**: add a release date to polishes with date sorting
+- **collection**: swap grid tiles to each polish's 2nd or 3rd photo
+- **security**: make the admin URL configurable via DJANGO_ADMIN_URL
+- **security**: send a Content-Security-Policy header in production
+- **security**: throttle logins and cap request body size
+- **web**: add a quick-save button to the polish and log forms
+- **web**: share the photo-tile grid between polish and log forms
+
+### Fix
+
+- **deps**: upgrade Pillow to 12.3 to clear known image CVEs
+- **config**: correct SMTP TLS setting for error mail
+
 ## v0.4.0 (2026-07-23)
 
 ### Feat
