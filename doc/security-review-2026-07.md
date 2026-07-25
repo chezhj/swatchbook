@@ -38,7 +38,7 @@ has no default (fails loud).
 
 ## Findings
 
-### F1 — Out-of-date Pillow with reachable CVEs · Medium
+### F1 — Out-of-date Pillow with reachable CVEs · Medium  ✅ FIXED
 `requirements.txt` pins **Pillow 11.3.0**; `pip-audit` reports **18 known CVEs**, all fixed in
 Pillow **12.x**. Every uploaded photo flows through `catalog/imaging.py`
 (`Image.open` → `exif_transpose` → `thumbnail` → `save`), so the subset that triggers on
@@ -55,40 +55,50 @@ opens PDFs, saves TGA, or passes user coordinates to Pillow.
 *Mitigating factor:* only the authenticated sole owner can upload, so an attacker must already
 control the single account. Impact is realistically crash/DoS rather than practical RCE.
 
-**Fix:** bump the constraint `pillow (>=11.0,<12.0)` → `>=12.3,<13.0` in `pyproject.toml`,
-`poetry lock`, redeploy. Highest value-to-effort item here.
+**Fixed:** bumped the constraint to `pillow (>=12.3,<13.0)`, relocked (Pillow 12.3.0). `pip-audit`
+now reports **no known vulnerabilities**; the imaging tests pass unchanged.
 
-### F2 — No login rate-limiting / lockout · Low  *(confirmed in Phase B)*
-No `django-axes`, `django-ratelimit`, or throttle on the login view — password guessing is
+### F2 — No login rate-limiting / lockout · Low  ✅ FIXED
+No `django-axes`, `django-ratelimit`, or throttle on the login view — password guessing was
 unthrottled at the app layer. **Confirmed live:** 10 consecutive failed logins all returned
 `200` with steady ~0.75s timing and no `429` / `Retry-After` / lockout — neither the app nor
-the host (Apache/DirectAdmin) throttles login attempts. Single-user +
-`AUTH_PASSWORD_VALIDATORS` (min-length, common, numeric, similarity) blunt this, but a
-lockout/backoff is cheap insurance.
-**Fix:** add `django-axes` (lock after N failures) or a per-IP throttle.
+the host (Apache/DirectAdmin) throttled login attempts.
+**Fixed:** added `django-axes` (`AXES_FAILURE_LIMIT=5`, `AXES_COOLOFF_TIME=1h`, lock by IP and
+username, reset on success). Verified locally: the 5th failed login onward returns `429`; a
+valid login clears the counter. Deploy note: run `manage.py migrate` (axes adds tables); if a
+reverse proxy fronts the app, configure `django-ipware` so axes sees the real client IP.
 
-### F3 — No upload size cap or decompression-bomb guard · Low
-No `DATA_UPLOAD_MAX_MEMORY_SIZE` / `FILE_UPLOAD_MAX_MEMORY_SIZE` override and no
-`Image.MAX_IMAGE_PIXELS` guard, so there is no ceiling on upload size or decoded pixel count.
-This compounds F1's FITS/decompression angle.
-**Fix:** set a sane `DATA_UPLOAD_MAX_MEMORY_SIZE` (e.g. 10–15 MB) and keep Pillow's default
-`MAX_IMAGE_PIXELS` bomb check (don't disable it).
+### F3 — No upload size cap or decompression-bomb guard · Low  ✅ PARTLY FIXED
+No `DATA_UPLOAD_MAX_MEMORY_SIZE` override, so there was no ceiling on the non-file request body.
+**Fixed:** set `DATA_UPLOAD_MAX_MEMORY_SIZE = 5 MB`. Verified locally: a 6 MB form POST → `400`
+(`RequestDataTooBig`), normal login unaffected. Pillow's default `MAX_IMAGE_PIXELS` bomb check
+is left enabled (F1's upgrade keeps it).
+**Still open (host-side):** file-upload *bytes* are exempt from `DATA_UPLOAD_MAX_MEMORY_SIZE`
+by Django design, so a hard cap on total photo size should be set at the web server
+(Apache `LimitRequestBody`).
 
 ### F4 — No Content-Security-Policy header · Low
 All other security headers are present, but there is no `Content-Security-Policy`. XSS risk is
 already low (autoescaping, no user `mark_safe`), so CSP here is defense-in-depth.
 **Fix:** add a CSP (via `django-csp` or a middleware/header). Start report-only, then enforce.
 
-### F9 — Unauthenticated 500 emails admins (error-mail amplification) · Low
-**Found in Phase B.** A malformed `multipart/form-data` POST to `/login/` returns a **500**
-(generic page, *no* traceback leak — DEBUG is off). But prod logging routes `django.request`
-ERROR → `AdminEmailHandler` (`config/settings/prod.py:66-72`), so every such 500 emails the
-admin. An unauthenticated attacker can therefore trigger admin emails at will with a tiny
-crafted request — a mailbox-flood / annoyance-DoS amplifier (and a way to bury a real error
-alert in noise). The parse error should be a `400`, not a `500`.
-**Fix:** catch `MultiPartParserError` (e.g. a small middleware returning `HttpResponseBadRequest`,
-or upgrade/verify Django's handling) so malformed uploads yield `400` and don't page you; and/or
-rate-limit `mail_admins`. Low severity — noise, not compromise.
+### F9 — Malformed multipart POST to `/login/` returns 500 · Low  · host-level, needs investigation
+**Found in Phase B, re-characterised on follow-up.** A malformed `multipart/form-data` POST to
+`/login/` returns a **500**. On closer inspection the 500 body is an **Apache/Passenger error
+page** (`Content-Type: text/html; charset=iso-8859-1`, "contact webmaster@vdwaal.net") — *not*
+a Django 500 page. The error is generated at the **Apache/Passenger layer, outside Django**:
+- Django 5.2.16 does **not** raise on the malformed multipart bodies tested — it parses them to
+  empty and the request ends at CSRF (`403`). The 500 could not be reproduced in Django at all.
+- Because it isn't a Django-rendered 500, the earlier "emails the admins" conclusion is
+  **unconfirmed** — an Apache-level 500 does not reach Django's `django.request` → `mail_admins`
+  path. *Action:* check whether any Django error-mail actually arrived during the probes; if
+  none did, the mail-flood angle is void.
+
+**Not fixable in Django.** A Django `MalformedUploadMiddleware` was prototyped and **dropped** —
+it can't intercept an error Django never sees, and no reachable Django-level 500 exists to guard.
+**Fix (host-side):** investigate why Passenger/Apache/mod_security returns 500 on a malformed
+multipart body (vs. a `400`), and confirm the admin-mail question above. Low severity — noise at
+most, not compromise.
 
 ### F5 — Host/version banners disclosed · Info
 Responses expose `Server: Apache/2` and `X-Powered-By: Phusion Passenger(R) 6.0.26`. Minor
@@ -117,10 +127,12 @@ beyond ensuring the real prod key is long/random (can't be verified black-box).
 
 ## Priority
 
-1. **F1** — upgrade Pillow to ≥ 12.3 (do this first; reachable CVEs).
-2. **F3** + **F2** + **F9** — upload size cap; login lockout; 400-not-500 on malformed uploads.
-3. **F4** — add CSP.
-4. **F5–F8** — informational / host-side hardening, at your discretion.
+- ✅ **F1** — Pillow upgraded to 12.3 (commit `637cc35`).
+- ✅ **F2** + **F3** — django-axes login lockout; `DATA_UPLOAD_MAX_MEMORY_SIZE` cap.
+- **Open — app:** **F4** add CSP.
+- **Open — host-side:** **F9** (investigate the Apache/Passenger 500 on malformed multipart);
+  **F3** tail (Apache `LimitRequestBody` for file-body size); **F5–F7** banners / panel / admin
+  path. **F8** is mitigated, no action.
 
 ## Phase B results (active, black-box — run after confirmed DB backup)
 
