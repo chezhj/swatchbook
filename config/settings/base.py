@@ -45,6 +45,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Attaches Content-Security-Policy from settings.CSP_POLICY (prod only); a no-op
+    # everywhere the policy is unset, so it never touches the Vite dev server.
+    "web.middleware.ContentSecurityPolicyMiddleware",
     # django-axes: must be last so it wraps the login attempt.
     "axes.middleware.AxesMiddleware",
 ]

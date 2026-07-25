@@ -25,6 +25,24 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 X_FRAME_OPTIONS = "DENY"
 
+# Content-Security-Policy (see web.middleware.ContentSecurityPolicyMiddleware). Static,
+# no nonce: Alpine needs 'unsafe-eval' and the templates use inline style attributes, so
+# a nonce would gain nothing. Google Fonts is the only external origin (base.html); every
+# script/frame/connect target is locked to 'self'. img-src allows data:/blob: for the
+# pre-save photo previews (URL.createObjectURL in photoTile.js).
+CSP_POLICY = (
+    "default-src 'self'; "
+    "base-uri 'self'; "
+    "object-src 'none'; "
+    "frame-ancestors 'none'; "
+    "form-action 'self'; "
+    "img-src 'self' data: blob:; "
+    "script-src 'self' 'unsafe-eval'; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "font-src 'self' https://fonts.gstatic.com; "
+    "connect-src 'self'"
+)
+
 # The browsable API is a data-entry hazard on a live single-user site.
 REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [  # noqa: F405
     "rest_framework.renderers.JSONRenderer",
