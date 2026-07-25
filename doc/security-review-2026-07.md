@@ -120,10 +120,13 @@ only because it advertises the control panel and the redirect target is `http://
 **Fix (optional, host-side):** confirm the panel enforces HTTPS on 2222 and restrict panel
 access by IP if the host allows.
 
-### F7 — Admin at the default `/admin/` path · Info
-`config/urls.py` mounts admin at `/admin/`. It's login-protected, but the default path invites
+### F7 — Admin at the default `/admin/` path · Info  ✅ CONFIGURABLE (set in prod .env)
+`config/urls.py` mounted admin at `/admin/` — login-protected, but the default path invites
 automated probing.
-**Fix (optional):** move to an obscure path and/or IP-restrict at the web-server level.
+**Done in code:** the admin path is now `settings.ADMIN_URL`, read from `DJANGO_ADMIN_URL`
+(default `admin/`). **Action:** set `DJANGO_ADMIN_URL` to an unguessable path in the production
+`.env`; the default `/admin/` then 404s. Optional IP allowlist for that path is in
+`doc/host-hardening.md`. The secret path lives only in `.env`, never in git.
 
 ### F8 — Insecure `SECRET_KEY` default committed · Info (mitigated)
 `config/settings/base.py:15` and `.env.example:5` carry the literal
