@@ -113,6 +113,39 @@
   </div>
 
   <div class="divider"></div>
+  <div class="sub">Release date <span style="text-transform:none;">(year required)</span></div>
+  <div class="field" x-data="releaseDate({
+         year: '{{ form.release_year.value|default_if_none:'' }}',
+         month: '{{ form.release_month.value|default_if_none:'' }}',
+         day: '{{ form.release_day.value|default_if_none:'' }}',
+       })">
+    <div class="date-parts">
+      <label class="date-part">
+        <span>{{ form.release_year.label }}</span>
+        {{ form.release_year }}
+      </label>
+      <label class="date-part">
+        <span>{{ form.release_month.label }}</span>
+        {{ form.release_month }}
+      </label>
+      <label class="date-part">
+        <span>{{ form.release_day.label }}</span>
+        {{ form.release_day }}
+      </label>
+    </div>
+    {% comment %}
+    Year's own errors (e.g. the required check) render server-side; the month/day
+    problems are shown live by .date-err below, which recomputes on redisplay too.
+    {% endcomment %}
+    {{ form.release_year.errors }}
+    <div class="date-err" x-cloak x-show="dateError" x-text="dateError"></div>
+    <div class="date-warn" x-cloak x-show="mismatch && !dateError">
+      Release year <span x-text="year"></span> doesn’t match the collection year
+      <span x-text="collectionYear"></span>. You can still save.
+    </div>
+  </div>
+
+  <div class="divider"></div>
   <div class="sub">Formula</div>
   <div class="chiprow" style="margin-bottom:16px;">
     {% for choice in form.formulas %}

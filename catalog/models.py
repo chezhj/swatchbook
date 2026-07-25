@@ -1,3 +1,5 @@
+import calendar
+
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.text import slugify
@@ -117,6 +119,12 @@ class Polish(models.Model):
         default=True,
         help_text="Unticked means it was owned once but no longer is.",
     )
+    # Release date, split so the year can be mandatory while month/day stay optional —
+    # a single DateField can't express "year only". The form requires the year; a data
+    # migration backfilled it from the collection's year where one was set.
+    release_year = models.PositiveSmallIntegerField(null=True, blank=True)
+    release_month = models.PositiveSmallIntegerField(null=True, blank=True)
+    release_day = models.PositiveSmallIntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = PolishQuerySet.as_manager()
@@ -150,6 +158,19 @@ class Polish(models.Model):
         """URL of the photo a swatch tile renders, or "" when there is none."""
         photo = self.primary_photo
         return photo.image.url if photo else ""
+
+    @property
+    def release_date_display(self):
+        """The release date at whatever precision was entered: "2023", "Jun 2023",
+        or "14 Jun 2023". Empty when no year is set."""
+        if not self.release_year:
+            return ""
+        month = calendar.month_abbr[self.release_month] if self.release_month else ""
+        if self.release_month and self.release_day:
+            return f"{self.release_day} {month} {self.release_year}"
+        if self.release_month:
+            return f"{month} {self.release_year}"
+        return str(self.release_year)
 
 
 class PolishPhoto(models.Model):

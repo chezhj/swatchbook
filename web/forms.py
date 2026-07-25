@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.forms import inlineformset_factory
 
@@ -51,6 +53,9 @@ class PolishForm(forms.ModelForm):
             "name",
             "brand",
             "collection",
+            "release_year",
+            "release_month",
+            "release_day",
             "formulas",
             "colors",
             "description",
@@ -62,6 +67,33 @@ class PolishForm(forms.ModelForm):
             "formulas": forms.CheckboxSelectMultiple,
             "colors": forms.CheckboxSelectMultiple,
             "collection": forms.HiddenInput(attrs={"x-ref": "collectionId"}),
+            # The year drives the client-side "doesn't match the collection" warning
+            # (releaseDate.js reads it live); month/day are plain optional numbers.
+            "release_year": forms.NumberInput(
+                attrs={
+                    "placeholder": "YYYY",
+                    "min": 1900,
+                    "max": 2200,
+                    "x-ref": "year",
+                    "@input": "year = $event.target.value",
+                }
+            ),
+            "release_month": forms.NumberInput(
+                attrs={
+                    "placeholder": "MM",
+                    "min": 1,
+                    "max": 12,
+                    "@input": "month = $event.target.value",
+                }
+            ),
+            "release_day": forms.NumberInput(
+                attrs={
+                    "placeholder": "DD",
+                    "min": 1,
+                    "max": 31,
+                    "@input": "day = $event.target.value",
+                }
+            ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -73,6 +105,13 @@ class PolishForm(forms.ModelForm):
         self.fields["collection"].queryset = Collection.objects.select_related("brand")
         self.fields["formulas"].queryset = Formula.objects.all()
         self.fields["colors"].queryset = Color.objects.all()
+        # Year is the one mandatory part of the release date; month and day are optional.
+        # The model field is nullable (so existing rows survived the migration) — the
+        # requirement is enforced here at the form instead.
+        self.fields["release_year"].required = True
+        self.fields["release_year"].label = "Year"
+        self.fields["release_month"].label = "Month"
+        self.fields["release_day"].label = "Day"
         if self.instance.pk:
             self.fields["tags_text"].initial = ", ".join(t.name for t in self.instance.tags.all())
 
@@ -85,6 +124,32 @@ class PolishForm(forms.ModelForm):
             self.add_error("brand", "Pick a brand or add a new one.")
         elif brand and new_brand and brand.name.lower() != new_brand.lower():
             self.add_error("new_brand", "Either pick an existing brand or add a new one, not both.")
+
+        # Release date: month/day are optional, but each has to be in range, a day only
+        # means something with a month, and month+day together have to be a real date
+        # (catches 31 Feb). releaseDate.js mirrors these checks so the warning shows live;
+        # this is the authoritative backstop. The collection-year mismatch is deliberately
+        # *not* an error — it's a non-blocking warning surfaced client-side and on save.
+        year = cleaned.get("release_year")
+        month = cleaned.get("release_month")
+        day = cleaned.get("release_day")
+
+        if month is not None and not (1 <= month <= 12):
+            self.add_error("release_month", "Month must be between 1 and 12.")
+            month = None  # don't cascade a garbage month into the calendar check
+        if day is not None and not (1 <= day <= 31):
+            self.add_error("release_day", "Day must be between 1 and 31.")
+            day = None
+
+        if day and not cleaned.get("release_month"):
+            self.add_error("release_day", "Add a month before a day.")
+        elif month and day:
+            try:
+                # No year yet? Check against a leap year so a bare "29 Feb" is allowed;
+                # once a real year is entered the mismatch gets caught on the next save.
+                date(year or 2000, month, day)
+            except ValueError:
+                self.add_error("release_day", "That's not a real date.")
 
         return cleaned
 

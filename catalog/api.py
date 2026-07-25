@@ -25,13 +25,24 @@ POLISH_SORTS = {
 DEFAULT_POLISH_SORT = ["name"]
 
 # Sorts over nullable fields. NULLs go to the end regardless of direction, so
-# never-worn / collection-less polishes settle at the bottom rather than clumping
-# at the top under a descending sort. `name` is the tiebreak throughout.
+# never-worn / dateless polishes settle at the bottom rather than clumping at the
+# top under a descending sort. `name` is the tiebreak throughout. Each value is a
+# tuple of ordering expressions applied in order — the release-date sort chains
+# year → month → day so partial dates still fall in the right place, and both
+# directions are exposed (`date` oldest-first, `-date` newest-first).
 NULLS_LAST_SORTS = {
-    "last_used": F("last_used").asc(nulls_last=True),
-    "-last_used": F("last_used").desc(nulls_last=True),
-    "collection_date": F("collection__year").asc(nulls_last=True),
-    "-collection_date": F("collection__year").desc(nulls_last=True),
+    "last_used": (F("last_used").asc(nulls_last=True),),
+    "-last_used": (F("last_used").desc(nulls_last=True),),
+    "date": (
+        F("release_year").asc(nulls_last=True),
+        F("release_month").asc(nulls_last=True),
+        F("release_day").asc(nulls_last=True),
+    ),
+    "-date": (
+        F("release_year").desc(nulls_last=True),
+        F("release_month").desc(nulls_last=True),
+        F("release_day").desc(nulls_last=True),
+    ),
 }
 
 
@@ -80,6 +91,6 @@ class PolishViewSet(viewsets.ModelViewSet):
         sort = self.request.query_params.get("sort", "")
 
         if sort in NULLS_LAST_SORTS:
-            return qs.order_by(NULLS_LAST_SORTS[sort], "name")
+            return qs.order_by(*NULLS_LAST_SORTS[sort], "name")
 
         return qs.order_by(*POLISH_SORTS.get(sort, DEFAULT_POLISH_SORT))

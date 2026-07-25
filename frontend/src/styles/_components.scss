@@ -478,6 +478,59 @@
   }
 }
 
+// Release date: year / month / day side by side. Year is wider — it carries four
+// digits and is the mandatory one — month and day are narrow optional companions.
+.date-parts {
+  display: flex;
+  gap: 8px;
+
+  .date-part {
+    margin-bottom: 0;
+    flex: 1;
+    &:first-child { flex: 1.4; }
+
+    span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--mauve);
+      margin-bottom: 6px;
+    }
+
+    input { text-align: center; font-family: var(--font-mono); }
+  }
+}
+
+// Blocking date problem (bad month/day, impossible date) — pink like the errorlist,
+// but shown live by releaseDate.js as the user types instead of only after a submit.
+.date-err {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(232, 147, 208, 0.4);
+  background: rgba(232, 147, 208, 0.08);
+  border-radius: 10px;
+  color: var(--bone);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+// Non-blocking "year doesn't match the collection" note — informative, not an error,
+// so it wears the gold accent rather than the pink the errorlist uses.
+.date-warn {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(245, 215, 122, 0.35);
+  background: rgba(245, 215, 122, 0.08);
+  border-radius: 10px;
+  color: var(--bone);
+  font-size: 12px;
+  line-height: 1.45;
+
+  span { color: var(--gold); font-family: var(--font-mono); }
+}
+
 // Polish form: photos come first and take the top of the screen, since a photo is
 // what a polish looks like. The first slot is the lead shot, the rest sit beside it.
 .photo-slots {

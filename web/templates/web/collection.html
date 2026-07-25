@@ -121,7 +121,8 @@
         <button type="button" class="chip" :class="{ on: sort === '-last_used' }" @click="setSort('-last_used')">Last used</button>
         <button type="button" class="chip" :class="{ on: sort === 'name' }" @click="setSort('name')">Name</button>
         <button type="button" class="chip" :class="{ on: sort === 'brand' }" @click="setSort('brand')">Brand</button>
-        <button type="button" class="chip" :class="{ on: sort === '-collection_date' }" @click="setSort('-collection_date')">Collection date</button>
+        <button type="button" class="chip" :class="{ on: sort === '-date' }" @click="setSort('-date')">Newest release</button>
+        <button type="button" class="chip" :class="{ on: sort === 'date' }" @click="setSort('date')">Oldest release</button>
         <button type="button" class="chip" :class="{ on: sort === '-created_at' }" @click="setSort('-created_at')">Recently added</button>
       </div>
 

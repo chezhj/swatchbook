@@ -24,6 +24,9 @@ def base_payload(**overrides):
         "description": "",
         "webshop_link": "",
         "in_collection": "on",
+        "release_year": "2024",
+        "release_month": "",
+        "release_day": "",
         "new_brand": "",
         "new_collection": "",
         "new_collection_year": "",
@@ -94,6 +97,34 @@ class TestCreate:
         assert polish.collection.year == 2024
         assert polish.collection.brand == brand
 
+    def test_stores_a_full_release_date(self, auth_client, brand):
+        response = auth_client.post(
+            "/polish/new/",
+            base_payload(
+                brand=str(brand.pk), release_year="2023", release_month="6", release_day="14"
+            ),
+        )
+        assert response.status_code == 302
+        polish = Polish.objects.get()
+        assert (polish.release_year, polish.release_month, polish.release_day) == (2023, 6, 14)
+        assert polish.release_date_display == "14 Jun 2023"
+
+    def test_year_mismatch_warns_but_still_saves(self, auth_client, brand):
+        # Release year 2023 against a 2024 collection: saved anyway, with a heads-up.
+        response = auth_client.post(
+            "/polish/new/",
+            base_payload(
+                brand=str(brand.pk),
+                new_collection="Winter '24",
+                new_collection_year="2024",
+                release_year="2023",
+            ),
+            follow=True,
+        )
+        assert response.status_code == 200
+        assert Polish.objects.get().release_year == 2023
+        assert "collection year 2024" in response.content.decode()
+
     def test_parses_comma_separated_tags(self, auth_client, brand):
         auth_client.post(
             "/polish/new/",
@@ -156,6 +187,37 @@ class TestValidation:
         payload["colors"] = []
         response = auth_client.post("/polish/new/", payload)
         assert response.status_code == 200
+        assert Polish.objects.count() == 0
+
+    def test_requires_a_release_year(self, auth_client, brand):
+        payload = base_payload(brand=str(brand.pk), release_year="")
+        response = auth_client.post("/polish/new/", payload)
+        assert response.status_code == 200  # redisplayed, not saved
+        assert Polish.objects.count() == 0
+
+    def test_rejects_a_day_without_a_month(self, auth_client, brand):
+        response = auth_client.post(
+            "/polish/new/", base_payload(brand=str(brand.pk), release_day="14")
+        )
+        assert response.status_code == 200
+        assert "Add a month before a day." in response.context["form"].errors["release_day"]
+        assert Polish.objects.count() == 0
+
+    def test_rejects_an_impossible_date(self, auth_client, brand):
+        response = auth_client.post(
+            "/polish/new/",
+            base_payload(brand=str(brand.pk), release_month="2", release_day="31"),
+        )
+        assert response.status_code == 200
+        assert "That's not a real date." in response.context["form"].errors["release_day"]
+        assert Polish.objects.count() == 0
+
+    def test_rejects_an_out_of_range_month(self, auth_client, brand):
+        response = auth_client.post(
+            "/polish/new/", base_payload(brand=str(brand.pk), release_month="13")
+        )
+        assert response.status_code == 200
+        assert "release_month" in response.context["form"].errors
         assert Polish.objects.count() == 0
 
 

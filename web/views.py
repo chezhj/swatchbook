@@ -96,7 +96,24 @@ class PolishFormMixin:
             photo_formset.save()
 
         messages.success(self.request, f"Saved {self.object.name}.")
+        self._warn_on_year_mismatch()
         return redirect(self.get_success_url())
+
+    def _warn_on_year_mismatch(self):
+        """Backstop for the client-side check: if the release year and the collection's
+        year disagree, note it after saving. Non-blocking — the save already happened."""
+        collection = self.object.collection
+        if (
+            collection
+            and collection.year
+            and self.object.release_year
+            and collection.year != self.object.release_year
+        ):
+            messages.warning(
+                self.request,
+                f"Heads up: release year {self.object.release_year} doesn't match the "
+                f"{collection.name} collection year {collection.year}.",
+            )
 
     def get_success_url(self):
         return reverse("polish_detail", args=[self.object.pk])

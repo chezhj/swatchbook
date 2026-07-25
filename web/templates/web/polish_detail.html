@@ -53,6 +53,9 @@ when there isn't, and the placeholder tile only for polishes not photographed ye
     {{ polish.collection.name }}{% if polish.collection.year %} ({{ polish.collection.year }}){% endif %}
   </div>
 {% endif %}
+{% if polish.release_date_display %}
+  <div class="detail-collection mono">Released {{ polish.release_date_display }}</div>
+{% endif %}
 
 {% if not polish.in_collection %}
   <div style="text-align:center; margin-top:8px;"><span class="phase">no longer owned</span></div>

@@ -90,17 +90,27 @@ class TestPolishApi:
         names = [r["name"] for r in auth_client.get("/api/polishes/?sort=brand").json()["results"]]
         assert names == ["Teal No Lies", "Cherry Bomb"]  # Holo Taco before Static Nails
 
-    def test_sort_by_collection_date_puts_collectionless_last(
-        self, auth_client, polish, other_polish, collection
-    ):
-        # `polish` is in a 2024 collection; `other_polish` has no collection (year = NULL).
-        polish.collection = collection
+    def test_sort_by_release_date_puts_dateless_last(self, auth_client, polish, other_polish):
+        # `polish` has a release year; `other_polish` has none (year = NULL).
+        polish.release_year = 2024
         polish.save()
-        names = [
-            r["name"]
-            for r in auth_client.get("/api/polishes/?sort=-collection_date").json()["results"]
-        ]
+        names = [r["name"] for r in auth_client.get("/api/polishes/?sort=-date").json()["results"]]
         assert names == ["Teal No Lies", "Cherry Bomb"]
+
+    def test_sort_by_release_date_is_reversible(self, auth_client, polish, other_polish):
+        # Both dated: ascending and descending are mirror images. Same year, so the
+        # month breaks the tie — `other_polish` is earlier in the year.
+        polish.release_year = 2024
+        polish.release_month = 9
+        polish.save()
+        other_polish.release_year = 2024
+        other_polish.release_month = 3
+        other_polish.save()
+
+        asc = [r["name"] for r in auth_client.get("/api/polishes/?sort=date").json()["results"]]
+        desc = [r["name"] for r in auth_client.get("/api/polishes/?sort=-date").json()["results"]]
+        assert asc == ["Cherry Bomb", "Teal No Lies"]
+        assert desc == ["Teal No Lies", "Cherry Bomb"]
 
     def test_unknown_sort_falls_back_to_name(self, auth_client, polish, other_polish):
         names = [

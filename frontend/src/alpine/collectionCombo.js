@@ -48,7 +48,15 @@ export default function collectionCombo({ brandSelectId, newBrandId, selectedId 
           year: ds.selectedYear || null,
         };
       }
+      this.publishYear();
       this.syncBrand(brandSel, newBrand, true);
+    },
+
+    // Push the selected collection's year into the shared store so the release-date
+    // field can warn when they disagree. Null when nothing is chosen.
+    publishYear() {
+      const store = this.$store.collection;
+      if (store) store.year = this.selected ? this.selected.year || null : null;
     },
 
     syncBrand(brandSel, newBrand, initial = false) {
@@ -133,6 +141,7 @@ export default function collectionCombo({ brandSelectId, newBrandId, selectedId 
     choose(opt) {
       this.selected = { ...opt };
       this.writeExisting(opt);
+      this.publishYear();
       this.query = '';
       this.open = false;
     },
@@ -142,6 +151,7 @@ export default function collectionCombo({ brandSelectId, newBrandId, selectedId 
       if (!name) return;
       this.selected = { id: null, name, year: null, isNew: true };
       this.writeNew(name, null);
+      this.publishYear();
       this.query = '';
       this.open = false;
     },
@@ -150,6 +160,7 @@ export default function collectionCombo({ brandSelectId, newBrandId, selectedId 
       this.selected = null;
       this.editing = false;
       this.writeEmpty();
+      this.publishYear();
       this.query = '';
     },
 
@@ -179,6 +190,7 @@ export default function collectionCombo({ brandSelectId, newBrandId, selectedId 
         this.selected.name = name;
         this.selected.year = year;
         this.writeNew(name, year);
+        this.publishYear();
         this.editing = false;
         return;
       }
@@ -193,6 +205,7 @@ export default function collectionCombo({ brandSelectId, newBrandId, selectedId 
           opt.year = year;
         }
         this.writeExisting(this.selected);
+        this.publishYear();
         this.editing = false;
       } catch (e) {
         this.error = 'Couldn’t save — that name may already exist for this brand.';
