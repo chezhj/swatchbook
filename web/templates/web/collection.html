@@ -26,6 +26,14 @@
     <input type="search" x-ref="search" x-model="search" placeholder="Search by name or brand…" aria-label="Search polishes">
   </div>
 
+  {# Photo-slot selector: switch every tile to each polish's 1st / 2nd / 3rd photo. #}
+  <div class="chiprow" style="justify-content:flex-end; margin-bottom:10px;" aria-label="Photo slot">
+    <template x-for="n in 3" :key="n">
+      <button type="button" class="chip" :class="{ on: photoIndex === n - 1 }"
+              @click="setPhotoIndex(n - 1)" :aria-label="`Show photo ${n}`" x-text="n"></button>
+    </template>
+  </div>
+
   <template x-if="activeFilterCount > 0">
     <div class="chiprow">
       <button type="button" class="chip on" @click="clearAll()">

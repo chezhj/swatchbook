@@ -23,6 +23,9 @@ export default function collectionGrid(initialCount = 0) {
     // 'none' | 'brand' | 'collection'. Purely a client-side view over `results` —
     // it re-partitions the fetched list, it doesn't change what we fetch.
     group: 'none',
+    // Which photo slot (0-based) every tile shows: 0 = primary, 1 = second, 2 = third.
+    // Client-side only — it re-reads the already-fetched `photos` array, no refetch.
+    photoIndex: 0,
     // null = server-rendered markup is still what's on screen.
     results: null,
     resultCount: initialCount,
@@ -129,6 +132,14 @@ export default function collectionGrid(initialCount = 0) {
       else this.persist();
     },
 
+    setPhotoIndex(i) {
+      this.photoIndex = i;
+      // The server-rendered first paint only carries each polish's primary photo, so
+      // switching to slot 2/3 needs the Alpine grid (which has the full `photos` array).
+      if (this.results === null) this.refresh();
+      else this.persist();
+    },
+
     clearAll() {
       this.formulas = [];
       this.colors = [];
@@ -148,6 +159,7 @@ export default function collectionGrid(initialCount = 0) {
             colors: this.colors,
             sort: this.sort,
             group: this.group,
+            photoIndex: this.photoIndex,
           }),
         );
       } catch {
@@ -186,17 +198,28 @@ export default function collectionGrid(initialCount = 0) {
       }
     },
 
+    // The photo a tile shows for the current 1/2/3 selection, falling back to the
+    // polish's primary (photos[0], which the model orders first) when it has fewer
+    // photos than the selected slot. Photo-slot selection is client-only: the server
+    // partial deliberately renders slot 1, which is what photoIndex 0 resolves to.
+    photoUrlFor(polish) {
+      const photos = polish.photos || [];
+      if (photos.length === 0) return '';
+      return (photos[this.photoIndex] || photos[0]).image;
+    },
+
     // The two below mirror web/templates/web/_swatch.html — keep them in step. A photo
     // is the face of the tile; the finish classes only decorate the empty placeholder.
     swatchClasses(polish) {
-      if (polish.photo_url) return 'swatch';
+      if (this.photoUrlFor(polish)) return 'swatch';
       const classes = ['swatch', 'is-empty', ...(polish.finish_classes || [])];
       if ((polish.color_names || []).includes('Rainbow')) classes.push('is-rainbow');
       return classes.join(' ');
     },
 
     swatchStyle(polish) {
-      return polish.photo_url ? `background-image: url('${polish.photo_url}')` : '';
+      const url = this.photoUrlFor(polish);
+      return url ? `background-image: url('${url}')` : '';
     },
 
     init() {
@@ -209,6 +232,7 @@ export default function collectionGrid(initialCount = 0) {
         this.colors = saved.colors ?? [];
         this.sort = saved.sort ?? DEFAULT_SORT;
         this.group = saved.group ?? 'none';
+        this.photoIndex = saved.photoIndex ?? 0;
       }
 
       // Debounce the search box so typing doesn't fire a request per keystroke.
