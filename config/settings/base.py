@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     # Third party
     "rest_framework",
     "django_filters",
+    "axes",
     # Local
     "catalog",
     "wearlog",
@@ -44,6 +45,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # django-axes: must be last so it wraps the login attempt.
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -79,6 +82,21 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+# django-axes throttles login brute-force. Its standalone backend must come first so a
+# locked-out attempt is rejected before ModelBackend ever checks the password.
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+AXES_FAILURE_LIMIT = 5  # failed logins before lockout
+AXES_COOLOFF_TIME = 1  # hours the lockout lasts
+AXES_RESET_ON_SUCCESS = True  # a good login clears that client's failure count
+# Lock on IP and on username independently. Username-based lockout still bites even if a
+# proxy masks the client IP. NOTE: if this app sits behind a reverse proxy so REMOTE_ADDR
+# is the proxy, configure django-ipware (AXES_IPWARE_*) to read the real client IP.
+AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Europe/Amsterdam"
@@ -126,3 +144,9 @@ VITE_DEV_SERVER = env.bool("VITE_DEV_MODE", default=False)
 # 4000px+ and would bloat MEDIA_ROOT for no visible gain at these display sizes.
 IMAGE_MAX_EDGE = 1600
 IMAGE_JPEG_QUALITY = 85
+
+# Cap the non-file portion of a request (form fields, JSON) at 5 MB, well above any real
+# form here. Uploaded files are exempt from this limit — Pillow's default MAX_IMAGE_PIXELS
+# guard (left enabled) is what stops a decompression-bomb image, and the web server should
+# cap total body size (e.g. Apache LimitRequestBody) for the file bytes themselves.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024

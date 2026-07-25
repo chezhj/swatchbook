@@ -23,3 +23,7 @@ WHITENOISE_AUTOREFRESH = True
 WHITENOISE_USE_FINDERS = True
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
+# The suite logs in constantly with throwaway credentials; axes lockouts would make it
+# flaky. Disable the throttling (the tables still migrate) — F2 is covered separately.
+AXES_ENABLED = False
