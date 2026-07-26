@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="topbar">
-  <a href="{% if object %}{% url 'polish_detail' object.pk %}{% else %}{% url 'collection' %}{% endif %}"
+  <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'collection' %}{% endif %}"
      class="icon-btn" aria-label="Cancel">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
   </a>

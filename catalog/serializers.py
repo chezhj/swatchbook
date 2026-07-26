@@ -1,4 +1,3 @@
-from django.urls import reverse
 from rest_framework import serializers
 
 from .models import Brand, Collection, Color, Formula, Polish, PolishPhoto, Tag
@@ -99,5 +98,6 @@ class PolishSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at"]
 
     def get_detail_url(self, obj):
-        # Note the underscore: the DRF router already owns the name "polish-detail".
-        return reverse("polish_detail", args=[obj.pk])
+        # Canonical slugged URL. Note the underscore in the route name: the DRF router
+        # already owns the hyphenated "polish-detail".
+        return obj.get_absolute_url()

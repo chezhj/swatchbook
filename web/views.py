@@ -59,6 +59,15 @@ class PolishDetailView(DetailView):
     def get_queryset(self):
         return Polish.objects.with_related().with_last_used()
 
+    def get(self, request, *args, **kwargs):
+        # pk is authoritative; the slug is cosmetic. A missing or stale slug (an old
+        # bookmark, or a link made before a rename) 301s to the canonical URL.
+        self.object = self.get_object()
+        if kwargs.get("slug") != self.object.slug:
+            return redirect(self.object.get_absolute_url(), permanent=True)
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["recent_entries"] = self.object.log_entries.with_related().order_by("-date_worn")[
@@ -116,7 +125,7 @@ class PolishFormMixin:
             )
 
     def get_success_url(self):
-        return reverse("polish_detail", args=[self.object.pk])
+        return self.object.get_absolute_url()
 
 
 class PolishCreateView(PolishFormMixin, CreateView):

@@ -2,6 +2,7 @@ import calendar
 
 from django.core.validators import RegexValidator
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 
 from .imaging import resize_in_place
@@ -110,6 +111,10 @@ class Polish(models.Model):
         related_name="polishes",
     )
     name = models.CharField(max_length=150)
+    # Cosmetic URL slug. Derived from the name in save(), not unique — the pk is the
+    # authoritative lookup key, so the slug can collide freely and change on rename
+    # without breaking old links (the detail view redirects a stale slug to the canonical).
+    slug = models.SlugField(max_length=160, blank=True)
     description = models.TextField(blank=True)
     webshop_link = models.URLField(blank=True)
     formulas = models.ManyToManyField(Formula, related_name="polishes")
@@ -135,6 +140,15 @@ class Polish(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.brand.name}"
+
+    def save(self, *args, **kwargs):
+        # Keep the slug in step with the name. "polish" is a fallback for names that
+        # slugify to nothing (e.g. all-symbol titles), so the URL always has a slug part.
+        self.slug = slugify(self.name) or "polish"
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse("polish_detail", args=[self.pk, self.slug])
 
     @property
     def finish_classes(self):

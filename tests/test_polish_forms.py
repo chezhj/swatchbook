@@ -46,7 +46,7 @@ class TestEntryPoints:
         assert "Add your first polish" in html
 
     def test_detail_links_to_the_edit_form_not_the_admin(self, auth_client, polish):
-        html = auth_client.get(f"/polish/{polish.pk}/").content.decode()
+        html = auth_client.get(polish.get_absolute_url()).content.decode()
         assert f"/polish/{polish.pk}/edit/" in html
         assert "/admin/catalog/polish/" not in html
 

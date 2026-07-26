@@ -35,7 +35,7 @@ class TestPolishApi:
     def test_serializer_exposes_swatch_fields(self, auth_client, polish):
         row = auth_client.get("/api/polishes/").json()["results"][0]
         assert sorted(row["finish_classes"]) == ["f-glitter", "f-metallic"]
-        assert row["detail_url"] == f"/polish/{polish.pk}/"
+        assert row["detail_url"] == f"/polish/{polish.pk}/{polish.slug}/"
         assert row["photo_url"] == ""  # no photo yet, so the grid draws the placeholder
 
     def test_serializer_exposes_the_primary_photo(self, auth_client, polish, big_image):

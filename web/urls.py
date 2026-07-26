@@ -7,9 +7,18 @@ urlpatterns = [
     path("", views.CollectionView.as_view(), name="collection"),
     # Underscored names throughout: the DRF router owns the hyphenated ones.
     path("polish/new/", views.PolishCreateView.as_view(), name="polish_create"),
-    path("polish/<int:pk>/", views.PolishDetailView.as_view(), name="polish_detail"),
+    # Literal action routes come before the slug catch-all below, or "edit"/"delete"
+    # would be read as a slug.
     path("polish/<int:pk>/edit/", views.PolishUpdateView.as_view(), name="polish_update"),
     path("polish/<int:pk>/delete/", views.PolishDeleteView.as_view(), name="polish_delete"),
+    # The slug is cosmetic; the pk does the lookup. The bare-pk route keeps old links
+    # working — the view 301s it to the canonical slugged URL.
+    path("polish/<int:pk>/", views.PolishDetailView.as_view(), name="polish_detail_by_pk"),
+    path(
+        "polish/<int:pk>/<slug:slug>/",
+        views.PolishDetailView.as_view(),
+        name="polish_detail",
+    ),
     path("compare/", views.ComparePickerView.as_view(), name="compare_picker"),
     path("compare/result/", views.CompareResultView.as_view(), name="compare_result"),
     path("log/", views.LogListView.as_view(), name="log_list"),

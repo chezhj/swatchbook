@@ -11,7 +11,7 @@ class TestSmoke:
     def test_every_route_renders(self, auth_client, polish, log_entry):
         paths = [
             "/",
-            f"/polish/{polish.pk}/",
+            polish.get_absolute_url(),
             "/compare/",
             f"/compare/result/?polish={polish.pk}",
             "/log/",
@@ -23,6 +23,28 @@ class TestSmoke:
         ]
         for path in paths:
             assert auth_client.get(path).status_code == 200, path
+
+
+class TestPolishDetailSlug:
+    def test_canonical_url_carries_the_slug(self, auth_client, polish):
+        assert polish.slug == "teal-no-lies"
+        assert polish.get_absolute_url() == f"/polish/{polish.pk}/teal-no-lies/"
+        assert auth_client.get(polish.get_absolute_url()).status_code == 200
+
+    def test_bare_pk_redirects_to_the_canonical_url(self, auth_client, polish):
+        response = auth_client.get(f"/polish/{polish.pk}/")
+        assert response.status_code == 301
+        assert response["Location"] == polish.get_absolute_url()
+
+    def test_stale_slug_redirects_to_the_canonical_url(self, auth_client, polish):
+        response = auth_client.get(f"/polish/{polish.pk}/old-name/")
+        assert response.status_code == 301
+        assert response["Location"] == polish.get_absolute_url()
+
+    def test_rename_refreshes_the_slug(self, auth_client, polish):
+        polish.name = "Cobalt Dreams"
+        polish.save()
+        assert polish.slug == "cobalt-dreams"
 
 
 class TestCollectionView:

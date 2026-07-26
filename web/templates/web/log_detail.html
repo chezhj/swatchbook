@@ -52,7 +52,7 @@ than one. Tapping a photo opens it full-size in a lightbox; tapping again closes
 
 <div class="sub" style="margin-top:12px;">Polishes</div>
 {% for row in entry.entry_polishes.all %}
-  <a class="logrow" href="{% url 'polish_detail' row.polish.pk %}">
+  <a class="logrow" href="{{ row.polish.get_absolute_url }}">
     <div style="width:38px; flex:0 0 auto;">
       {% include "web/_swatch.html" with polish=row.polish %}
     </div>

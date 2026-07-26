@@ -64,7 +64,7 @@
 
 <div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
   {% for polish in selected %}
-    <a class="btn ghost" href="{% url 'polish_detail' polish.pk %}">Open {{ polish.name }}</a>
+    <a class="btn ghost" href="{{ polish.get_absolute_url }}">Open {{ polish.name }}</a>
   {% endfor %}
 </div>
 

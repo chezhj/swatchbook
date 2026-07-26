@@ -2,7 +2,7 @@
 Server-rendered swatch cell. Mirrors the markup collectionGrid() produces client-side —
 keep the two in step when either changes.
 {% endcomment %}
-<a class="swatch-cell" href="{% url 'polish_detail' polish.pk %}">
+<a class="swatch-cell" href="{{ polish.get_absolute_url }}">
   <div style="position:relative; width:100%;">
     {% include "web/_swatch.html" %}
   </div>
