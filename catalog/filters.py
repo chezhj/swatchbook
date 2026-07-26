@@ -61,5 +61,7 @@ class PolishFilter(filters.FilterSet):
         if not value:
             return queryset
         return queryset.filter(
-            Q(name__icontains=value) | Q(brand__name__icontains=value)
+            Q(name__icontains=value)
+            | Q(brand__name__icontains=value)
+            | Q(tags__name__icontains=value)
         ).distinct()

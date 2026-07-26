@@ -76,6 +76,13 @@ class TestPolishApi:
         data = auth_client.get("/api/polishes/?tag=summer").json()
         assert [r["name"] for r in data["results"]] == ["Teal No Lies"]
 
+    def test_search_matches_tag_name(self, auth_client, polish, other_polish):
+        from catalog.models import Tag
+
+        polish.tags.add(Tag.objects.create(name="Summer"))
+        data = auth_client.get("/api/polishes/?search=summ").json()
+        assert [r["name"] for r in data["results"]] == ["Teal No Lies"]
+
     def test_sort_by_last_used_puts_never_worn_last(self, auth_client, polish, other_polish):
         # Only `polish` has been worn; `other_polish` has last_used = NULL.
         entry = LogEntry.objects.create(date_worn=datetime.date(2026, 7, 12))
