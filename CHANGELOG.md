@@ -1,3 +1,10 @@
+## v0.6.0 (2026-07-26)
+
+### Feat
+
+- **catalog**: add cosmetic slugs to polish detail URLs
+- **catalog**: search polishes by tag in the collection search box
+
 ## v0.5.0 (2026-07-25)
 
 ### Feat
