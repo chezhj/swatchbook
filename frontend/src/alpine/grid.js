@@ -73,18 +73,22 @@ export default function collectionGrid(initialCount = 0) {
       return out;
     },
 
-    // Bucket by brand, brands alphabetical. Members keep their incoming order.
+    // Bucket by brand. Both the groups and their members follow the active sort:
+    // Map keeps first-insertion order, so a brand appears where the sort placed its
+    // first polish (e.g. under "Newest release", the brand with the newest polish leads).
+    // Re-sorting the groups here would override the chosen sort with a fixed A–Z order.
     byBrand(list) {
       const map = new Map();
       for (const p of list) {
         if (!map.has(p.brand)) map.set(p.brand, { id: p.brand, name: p.brand_name, polishes: [] });
         map.get(p.brand).polishes.push(p);
       }
-      return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+      return [...map.values()];
     },
 
-    // Bucket by collection, newest year first (matching the Collection model default);
-    // the "no collection" bucket sinks to the bottom.
+    // Bucket by collection. Like byBrand, groups follow the active sort via first
+    // appearance rather than an imposed year order — otherwise grouping would silently
+    // resort the grid. The one fixed rule: the "no collection" bucket sinks to the bottom.
     byCollection(list) {
       const map = new Map();
       for (const p of list) {
@@ -99,13 +103,8 @@ export default function collectionGrid(initialCount = 0) {
         }
         map.get(key).polishes.push(p);
       }
-      return [...map.values()].sort((a, b) => {
-        if (a.id == null) return 1;
-        if (b.id == null) return -1;
-        const ay = a.year ?? -Infinity;
-        const by = b.year ?? -Infinity;
-        return by - ay || a.name.localeCompare(b.name);
-      });
+      const groups = [...map.values()];
+      return [...groups.filter((g) => g.id != null), ...groups.filter((g) => g.id == null)];
     },
 
     toggle(list, value) {
