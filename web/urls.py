@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
@@ -34,3 +35,10 @@ urlpatterns = [
     ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 ]
+
+if settings.DEBUG:
+    # Passwordless dev shortcut, never present in production. The view is guarded
+    # again by settings.DEV_AUTOLOGIN — see web.views.DevLoginView.
+    urlpatterns += [
+        path("dev-login/", views.DevLoginView.as_view(), name="dev_login"),
+    ]

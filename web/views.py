@@ -1,7 +1,13 @@
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth.decorators import login_not_required
 from django.db import transaction
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.generic import DeleteView, DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView
 
@@ -304,3 +310,33 @@ class RandomizerView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["nav_active"] = "random"
         return context
+
+
+@method_decorator(login_not_required, name="dispatch")
+class DevLoginView(View):
+    """Dev-only shortcut: log in as a throwaway "dev" user without a password.
+
+    Skips the login form while iterating on the UI. Guarded three ways so it can
+    never authenticate anyone in production:
+
+    1. the route is registered only when settings.DEBUG is true (web/urls.py);
+    2. settings.DEV_AUTOLOGIN must also be explicitly true (defaults false);
+    3. the "dev" user is created with an unusable password, so even where the
+       route exists the account can't be reached through the real login form.
+    """
+
+    def get(self, request, *args, **kwargs):
+        if not (settings.DEBUG and settings.DEV_AUTOLOGIN):
+            raise Http404
+        user_model = get_user_model()
+        user, created = user_model.objects.get_or_create(
+            username="dev",
+            defaults={"is_staff": True, "is_superuser": True},
+        )
+        if created:
+            user.set_unusable_password()
+            user.save(update_fields=["password"])
+        # Explicit backend: several are configured (axes + ModelBackend), so login()
+        # can't guess which authenticated this passwordless user.
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        return redirect(settings.LOGIN_REDIRECT_URL)

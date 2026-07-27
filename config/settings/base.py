@@ -149,6 +149,13 @@ REST_FRAMEWORK = {
 # the built manifest. Set by the "Django + Vite" launch config in .vscode/launch.json.
 VITE_DEV_SERVER = env.bool("VITE_DEV_MODE", default=False)
 
+# Dev convenience: when DEBUG and this are both true, the /dev-login/ route (registered
+# only under DEBUG, see web/urls.py) logs straight in as a throwaway "dev" user so the
+# login form can be skipped while iterating on the UI. The dev user is created with an
+# unusable password, so even where the route exists the account can't be reached through
+# the real login form. Defaults false: opt in explicitly with DEV_AUTOLOGIN=true in .env.
+DEV_AUTOLOGIN = env.bool("DEV_AUTOLOGIN", default=False)
+
 # Longest edge, in pixels, that uploaded photos are resized down to. Phone photos are
 # 4000px+ and would bloat MEDIA_ROOT for no visible gain at these display sizes.
 IMAGE_MAX_EDGE = 1600
