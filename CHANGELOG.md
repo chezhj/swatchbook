@@ -1,3 +1,13 @@
+## v0.7.0 (2026-07-28)
+
+### Feat
+
+- **web**: add a dev-only passwordless login shortcut
+
+### Fix
+
+- **collection**: order groups by the active sort, not by name
+
 ## v0.6.0 (2026-07-26)
 
 ### Feat
