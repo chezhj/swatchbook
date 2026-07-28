@@ -17,6 +17,15 @@ cd frontend && npm run build              # or: npm run watch
 Verification commands: prefer the PowerShell tool. The Bash tool swallows stdout from
 `python -c` in this environment.
 
+**Verifying screens in a browser**: every view is behind `LoginRequiredMiddleware`, so
+loading a page raw just bounces to the login form. To actually look at a screen (manual
+check or a Playwright/browser run), skip the form via the dev-only shortcut: set
+`DEV_AUTOLOGIN=true` in `.env`, run the server under DEBUG, then hit `/dev-login/` first —
+it logs in a throwaway `dev` superuser and redirects to the collection, and every
+subsequent request in that session is authenticated. The route only exists under DEBUG
+(`web/urls.py`) and the `dev` user has an unusable password, so it can't reach production.
+Use this to confirm UI changes render before calling them done.
+
 ## Layout
 
 - `config/` — settings split into `base` / `dev` / `prod` / `test`; `api_urls.py` holds
