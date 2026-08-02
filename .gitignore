@@ -15,6 +15,9 @@ staticfiles/
 # Environment
 .env
 .env.local
+#ignoring requirements.txt, as it will be build during release
+requirements.txt
+
 
 # Node / Vite
 node_modules/
@@ -22,7 +25,9 @@ frontend/dist/
 # web/static/dist/ is tracked on purpose: the CloudLinux host has no Node, so the
 # built bundle (including its .vite/manifest.json) ships in the repo for
 # `collectstatic` to gather. Rebuilt on every `cz bump` via the make_requirements
-# pre-bump hook. Vite's own dep cache lives under node_modules/.vite, already ignored.
+# pre-bump hook. Vite's own dep cache lives under node_modules/.vite, already ignored.]
+# Mod: now bundle is build in github action
+web/static/dist/
 
 # Tooling
 .pytest_cache/
