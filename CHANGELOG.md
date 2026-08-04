@@ -1,3 +1,9 @@
+## v0.7.1 (2026-08-04)
+
+### Fix
+
+- **compare**: always show the selected polish, not its log photo
+
 ## v0.7.0 (2026-07-28)
 
 ### Feat
