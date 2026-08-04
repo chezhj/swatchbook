@@ -16,9 +16,8 @@
 
 <div class="comparecols">
   {% comment %}
-  Left column is always the bottle as catalogued. Right column prefers a photographed
-  mani from the log — that two-up (in stock vs. as worn) is the point of the screen —
-  and falls back to the bottle swatch when the polish has never been logged.
+  Both columns are the bottle swatch as catalogued: selecting a polish always
+  shows that polish, side by side.
   {% endcomment %}
   <div class="comparecol">
     <div class="lbl">In collection</div>
@@ -31,20 +30,12 @@
 
   {% if right %}
   <div class="comparecol">
-    <div class="lbl">{% if right_entry and right_entry.primary_photo %}From log{% else %}In collection{% endif %}</div>
-    {% if right_entry and right_entry.primary_photo %}
-      <div class="photo-box"><img src="{{ right_entry.primary_photo.image.url }}" alt="{{ right_entry.display_title }}"></div>
-      <div style="text-align:center;">
-        <div class="detail-name" style="font-size:15px;">{{ right_entry.display_title }}</div>
-        <div class="detail-brand" style="font-size:9px;">Worn {{ right_entry.date_worn|date:"j M Y" }}</div>
-      </div>
-    {% else %}
-      {% include "web/_swatch.html" with polish=right extra_class="bottle" %}
-      <div style="text-align:center;">
-        <div class="detail-name" style="font-size:15px;">{{ right.name }}</div>
-        <div class="detail-brand" style="font-size:9px;">{{ right.brand.name }}</div>
-      </div>
-    {% endif %}
+    <div class="lbl">In collection</div>
+    {% include "web/_swatch.html" with polish=right extra_class="bottle" %}
+    <div style="text-align:center;">
+      <div class="detail-name" style="font-size:15px;">{{ right.name }}</div>
+      <div class="detail-brand" style="font-size:9px;">{{ right.brand.name }}</div>
+    </div>
   </div>
   {% endif %}
 </div>

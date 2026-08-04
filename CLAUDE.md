@@ -80,3 +80,10 @@ Use this to confirm UI changes render before calling them done.
 MVP + compare are built. The **randomizer is deliberately not implemented** (spec §7,
 phase 2) — `/random/` is a placeholder and `/api/polishes/random/` doesn't exist. Don't
 "fix" that without being asked.
+
+- **Compare** (`CompareResultView`, `web/_swatch.html`): both columns show each
+  selected polish's own catalogued bottle swatch — selecting a polish always shows that
+  polish. An earlier version substituted the most recent log photo into the right column
+  ("as worn"); that was removed as confusing. **How or whether to surface a logged
+  photo in compare is still undecided** (spec §8) — don't re-add the log substitution
+  without a decision.

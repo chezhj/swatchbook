@@ -168,10 +168,10 @@ class ComparePickerView(VocabularyMixin, ListView):
 
 
 class CompareResultView(TemplateView):
-    """SCR-05. Bottle swatch vs. a photographed mani from the log.
+    """SCR-05. Two bottle swatches side by side.
 
-    Takes ?left=<polish_id> and optionally ?right=<polish_id>. When the right-hand
-    polish has been worn, its most recent log entry supplies the photo column.
+    Takes up to two ?polish=<polish_id> params and shows each as catalogued —
+    selecting a polish always renders that polish.
     """
 
     template_name = "web/compare_result.html"
@@ -186,11 +186,6 @@ class CompareResultView(TemplateView):
 
         context["left"] = selected[0] if selected else None
         context["right"] = selected[1] if len(selected) > 1 else None
-        context["right_entry"] = None
-        if context["right"]:
-            context["right_entry"] = (
-                context["right"].log_entries.with_related().order_by("-date_worn").first()
-            )
         context["selected"] = selected
         return context
 

@@ -83,9 +83,8 @@ class TestCompare:
         html = response.content.decode()
         assert "Teal No Lies" in html
         assert "Cherry Bomb" in html
-        assert response.context["right_entry"] is None
 
-    def test_uses_a_logged_photo_for_the_right_column(
+    def test_shows_the_polish_not_its_log_for_the_right_column(
         self, auth_client, polish, other_polish, big_image
     ):
         from wearlog.models import LogEntryPolish, LogPhoto
@@ -95,8 +94,9 @@ class TestCompare:
         LogPhoto.objects.create(log_entry=entry, image=big_image())
 
         response = auth_client.get(f"/compare/result/?polish={polish.pk}&polish={other_polish.pk}")
-        assert response.context["right_entry"] == entry
-        assert "From log" in response.content.decode()
+        # Selecting a polish always shows that polish, never a substituted log photo.
+        assert response.context["right"] == other_polish
+        assert "From log" not in response.content.decode()
 
     def test_ignores_junk_ids(self, auth_client, polish):
         response = auth_client.get("/compare/result/?polish=abc&polish=999999")

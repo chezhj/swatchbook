@@ -123,7 +123,7 @@ Matches the mockup 1:1 — see `swatchbook-mockup.html` for the visual reference
 2. **Filter sheet** — formula chips, color chips, sort options.
 3. **Detail** — single polish: hero swatch, name/brand/collection, formula & color pills, tags, description, webshop link, "log this polish" CTA.
 4. **Compare picker** — same grid in a multi-select mode; floating bar shows selection + "Compare →".
-5. **Compare result** — two-column: bottle swatch ("in collection") vs. logged photo ("from log"), with a small attribute comparison table.
+5. **Compare result** — two-column: both selected polishes shown as their catalogued bottle swatch ("in collection"), with a small attribute comparison table. Selecting a polish always shows that polish. (How — or whether — to surface a logged "as worn" photo here is undecided; see §8.)
 6. **Log** — chronological list of worn entries (photo, date, linked polish/polishes).
 7. **Randomizer** *(phase 2)* — mood + season filters, suggests a combo pulled from existing collection data. No AI/generation — just a filtered random pick.
 
@@ -155,3 +155,4 @@ Note: the compare flow was sketched out in detail in the original wireframes and
 - Auto-generate `catalog_code` or enter manually per polish?
 - Image handling: resize/compress on upload (recommended for phone photos — e.g. Pillow-based resize in a model `save()` or signal) to keep the SQLite-backed media folder manageable.
 - Same-origin vs. subdomain split for frontend/backend on the cPanel host (affects CORS/CSRF setup).
+- Logs in compare: currently the compare result always shows each selected polish's own bottle swatch. Whether to also offer an "as worn" logged photo — and if so, how (a toggle, a separate row, opt-in per column) — is still to be decided. An earlier version silently substituted the most recent log photo into the right column, which was confusing because selecting a polish didn't show that polish.
