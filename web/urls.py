@@ -28,6 +28,7 @@ urlpatterns = [
     path("log/<int:pk>/edit/", views.LogEntryUpdateView.as_view(), name="log_update"),
     path("log/<int:pk>/delete/", views.LogEntryDeleteView.as_view(), name="log_delete"),
     path("random/", views.RandomizerView.as_view(), name="randomizer"),
+    path("about/", views.AboutView.as_view(), name="about"),
     path(
         "login/",
         auth_views.LoginView.as_view(template_name="registration/login.html"),

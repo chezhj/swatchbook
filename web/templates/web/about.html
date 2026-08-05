@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}About · Swatchbook{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="sub">About</div>
+    <h2>Swatchbook</h2>
+  </div>
+</div>
+
+{# ---------- who's signed in ---------- #}
+<div class="account">
+  <div class="avatar"><span>{{ user.get_username|first|upper }}</span></div>
+  <div class="account-body">
+    <div class="account-name">
+      {{ user.get_username }}
+      {% if user.is_superuser %}<span class="pill">superuser</span>
+      {% elif user.is_staff %}<span class="pill">staff</span>{% endif %}
+    </div>
+    {% if user.email %}<div class="account-mail">{{ user.email }}</div>{% endif %}
+    <div class="account-seen">
+      Signed in{% if user.last_login %} · last login {{ user.last_login|date:"j M Y, H:i" }}{% endif %}
+    </div>
+  </div>
+</div>
+
+{# ---------- the collection in numbers ---------- #}
+<p class="section-label">Your collection in numbers</p>
+
+<div class="stat-grid">
+  <div class="stat feature">
+    <div class="n">{{ stats.entries }}</div>
+    <div class="k">Log entries</div>
+    {% if stats.last_worn %}<div class="sub-n">last worn {{ stats.last_worn|date:"j M Y" }}</div>{% endif %}
+  </div>
+
+  <div class="stat"><div class="n">{{ stats.in_collection }}</div><div class="k">In collection</div></div>
+  <div class="stat"><div class="n">{{ stats.retired }}</div><div class="k">Retired</div></div>
+  <div class="stat"><div class="n">{{ stats.brands }}</div><div class="k">Brands</div></div>
+  <div class="stat"><div class="n">{{ stats.collections }}</div><div class="k">Collections</div></div>
+  <div class="stat"><div class="n">{{ stats.photos }}</div><div class="k">Photos</div></div>
+  <div class="stat"><div class="n">{{ stats.tags }}</div><div class="k">Tags</div></div>
+</div>
+
+{% if most_worn %}
+<a class="highlight" href="{{ most_worn.get_absolute_url }}">
+  <div class="highlight-swatch">{% include "web/_swatch.html" with polish=most_worn %}</div>
+  <div class="meta">
+    <div class="k">Most-worn polish</div>
+    <div class="name">{{ most_worn.name }}</div>
+    <div class="brand">{{ most_worn.brand.name }}</div>
+  </div>
+  <div class="count">worn {{ most_worn.wears }}&times;</div>
+</a>
+{% endif %}
+
+{# ---------- per-colour breakdown ---------- #}
+{% if by_color %}
+<p class="section-label">By colour</p>
+<div class="breakdown">
+  {% for color in by_color %}
+    <div class="bar-row">
+      <span class="bar-label">
+        <span class="dot" style="background: {% if color.hex_color %}{{ color.hex_color }}{% else %}conic-gradient(#d9772f,#d9b23c,#4c7a5e,#1f6e6e,#2e4a8f,#6a4c93,#c2447a){% endif %};"></span>{{ color.name }}
+      </span>
+      <span class="bar-track">
+        <span class="bar-fill" style="width: {% widthratio color.n by_color_max 100 %}%; background: {% if color.hex_color %}{{ color.hex_color }}{% else %}var(--holo){% endif %};"></span>
+      </span>
+      <span class="bar-n">{{ color.n }}</span>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ---------- per-formula breakdown ---------- #}
+{% if by_formula %}
+<p class="section-label">By formula</p>
+<div class="breakdown">
+  {% for formula in by_formula %}
+    <div class="bar-row">
+      <span class="bar-label">{{ formula.name }}</span>
+      <span class="bar-track">
+        <span class="bar-fill holo" style="width: {% widthratio formula.n by_formula_max 100 %}%;"></span>
+      </span>
+      <span class="bar-n">{{ formula.n }}</span>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ---------- version ---------- #}
+<div class="divider holo"></div>
+<div class="version">
+  <span class="app">Swatchbook</span>
+  <span class="v">v{{ version }}</span>
+</div>
+<div class="buildline">
+  Personal nail-polish catalog &amp; wear log<br>
+  <a href="https://github.com/chezhj/swatchbook/releases" target="_blank" rel="noopener">Release notes</a>
+  · <a href="https://github.com/chezhj/swatchbook" target="_blank" rel="noopener">Source on GitHub</a>
+</div>
+
+<form method="post" action="{% url 'logout' %}" class="signout-form">
+  {% csrf_token %}
+  <button type="submit" class="btn ghost">Sign out</button>
+</form>
+{% endblock %}

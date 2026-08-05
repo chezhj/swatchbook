@@ -20,6 +20,7 @@ class TestSmoke:
             f"/log/{log_entry.pk}/edit/",
             f"/log/{log_entry.pk}/delete/",
             "/random/",
+            "/about/",
         ]
         for path in paths:
             assert auth_client.get(path).status_code == 200, path
@@ -107,6 +108,42 @@ class TestCompare:
         response = auth_client.get(f"/compare/result/?polish={other_polish.pk}&polish={polish.pk}")
         assert response.context["left"] == other_polish
         assert response.context["right"] == polish
+
+
+class TestAbout:
+    def test_shows_signed_in_user_and_version(self, auth_client, user):
+        import config
+
+        html = auth_client.get("/about/").content.decode()
+        assert user.get_username() in html
+        assert f"v{config.__version__}" in html
+
+    def test_counts_the_collection(self, auth_client, polish, other_polish, log_entry):
+        response = auth_client.get("/about/")
+        stats = response.context["stats"]
+        assert stats["in_collection"] == 2
+        assert stats["brands"] == 2
+        assert stats["entries"] == 1
+
+    def test_retired_polishes_are_counted_separately(self, auth_client, polish, other_polish):
+        other_polish.in_collection = False
+        other_polish.save()
+        stats = auth_client.get("/about/").context["stats"]
+        assert stats["in_collection"] == 1
+        assert stats["retired"] == 1
+
+    def test_breaks_down_by_colour_and_formula(self, auth_client, polish, other_polish):
+        response = auth_client.get("/about/")
+        # polish is Teal + (Metallic, Glitter); other_polish is Red + Creme.
+        colors = {c.name: c.n for c in response.context["by_color"]}
+        formulas = {f.name: f.n for f in response.context["by_formula"]}
+        assert colors == {"Teal": 1, "Red": 1}
+        assert formulas == {"Metallic": 1, "Glitter": 1, "Creme": 1}
+
+    def test_surfaces_the_most_worn_polish(self, auth_client, polish, log_entry):
+        most_worn = auth_client.get("/about/").context["most_worn"]
+        assert most_worn == polish
+        assert most_worn.wears == 1
 
 
 class TestLogForms:

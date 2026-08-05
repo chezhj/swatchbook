@@ -1,6 +1,7 @@
 {% comment %}
 Bottom nav. "Random" stays visible but disabled with the mockup's phase-2 badge —
-removing it would collapse the four-item layout the design is built around.
+removing it would collapse the layout the design is built around. About rounds it out
+to five, sharing the same space-around spacing.
 {% endcomment %}
 <nav class="navbar">
   <a href="{% url 'collection' %}" class="navitem {% if nav_active == 'collection' %}active{% endif %}" aria-label="Collection">
@@ -17,6 +18,10 @@ removing it would collapse the four-item layout the design is built around.
   </a>
   <a href="{% url 'compare_picker' %}" class="navitem {% if nav_active == 'compare' %}active{% endif %}" aria-label="Compare">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/></svg>
+    <span class="bar"></span>
+  </a>
+  <a href="{% url 'about' %}" class="navitem {% if nav_active == 'about' %}active{% endif %}" aria-label="About">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
     <span class="bar"></span>
   </a>
 </nav>

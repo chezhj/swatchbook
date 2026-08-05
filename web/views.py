@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.decorators import login_not_required
 from django.db import transaction
+from django.db.models import Count, Max
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -11,8 +12,9 @@ from django.views import View
 from django.views.generic import DeleteView, DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView
 
-from catalog.models import Color, Formula, Polish
-from wearlog.models import LogEntry
+import config
+from catalog.models import Brand, Collection, Color, Formula, Polish, PolishPhoto, Tag
+from wearlog.models import LogEntry, LogPhoto
 
 from .forms import (
     LogEntryForm,
@@ -304,6 +306,58 @@ class RandomizerView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nav_active"] = "random"
+        return context
+
+
+class AboutView(TemplateView):
+    """SCR-08. Who's signed in, the collection in numbers, and the running version.
+
+    Read-only dashboard — every figure is a live count off the catalogue, so it needs
+    no storage of its own.
+    """
+
+    template_name = "web/about.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nav_active"] = "about"
+        context["version"] = config.__version__
+
+        context["stats"] = {
+            "in_collection": Polish.objects.filter(in_collection=True).count(),
+            "retired": Polish.objects.filter(in_collection=False).count(),
+            "brands": Brand.objects.count(),
+            "collections": Collection.objects.count(),
+            "entries": LogEntry.objects.count(),
+            # Bottle shots and worn-mani shots both count as photos of the collection.
+            "photos": PolishPhoto.objects.count() + LogPhoto.objects.count(),
+            "tags": Tag.objects.count(),
+            "last_worn": LogEntry.objects.aggregate(d=Max("date_worn"))["d"],
+        }
+
+        context["most_worn"] = (
+            Polish.objects.with_related()
+            .annotate(wears=Count("log_entries"))
+            .filter(wears__gt=0)
+            .order_by("-wears", "name")
+            .first()
+        )
+
+        # Per-colour / per-formula tallies. A polish can wear several of each, so these
+        # sums run higher than the polish count — they answer "how many polishes touch
+        # this colour", not "how the collection splits up". Ordered so the bar chart
+        # reads big-to-small; `_max` scales the bar widths in the template.
+        by_color = list(
+            Color.objects.annotate(n=Count("polishes")).filter(n__gt=0).order_by("-n", "name")
+        )
+        by_formula = list(
+            Formula.objects.annotate(n=Count("polishes")).filter(n__gt=0).order_by("-n", "name")
+        )
+        context["by_color"] = by_color
+        context["by_formula"] = by_formula
+        context["by_color_max"] = by_color[0].n if by_color else 0
+        context["by_formula_max"] = by_formula[0].n if by_formula else 0
+
         return context
 
 
