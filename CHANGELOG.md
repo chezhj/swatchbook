@@ -1,3 +1,9 @@
+## v0.8.0 (2026-08-05)
+
+### Feat
+
+- **web**: add an About page with collection stats
+
 ## v0.7.1 (2026-08-04)
 
 ### Fix
