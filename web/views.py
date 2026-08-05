@@ -325,7 +325,11 @@ class AboutView(TemplateView):
 
         context["stats"] = {
             "in_collection": Polish.objects.filter(in_collection=True).count(),
-            "retired": Polish.objects.filter(in_collection=False).count(),
+            # "Retired" and "Limited edition" are user judgements, so they read off the
+            # matching tag rather than the ownership flag — a polish can be off the shelf
+            # without being tagged retired, and vice versa. iexact keeps casing forgiving.
+            "retired": Polish.objects.filter(tags__name__iexact="Retired").count(),
+            "limited_edition": Polish.objects.filter(tags__name__iexact="Limited edition").count(),
             "brands": Brand.objects.count(),
             "collections": Collection.objects.count(),
             "entries": LogEntry.objects.count(),

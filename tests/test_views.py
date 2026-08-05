@@ -125,12 +125,26 @@ class TestAbout:
         assert stats["brands"] == 2
         assert stats["entries"] == 1
 
-    def test_retired_polishes_are_counted_separately(self, auth_client, polish, other_polish):
-        other_polish.in_collection = False
-        other_polish.save()
+    def test_retired_and_limited_edition_count_by_tag(self, auth_client, polish, other_polish):
+        from catalog.models import Tag
+
+        # Ownership flag and the tags are independent: other_polish stays in collection
+        # but is tagged, and the counts follow the tags, not in_collection.
+        retired = Tag.objects.create(name="Retired")
+        limited = Tag.objects.create(name="Limited edition")
+        polish.tags.add(retired)
+        other_polish.tags.add(limited)
+
         stats = auth_client.get("/about/").context["stats"]
-        assert stats["in_collection"] == 1
+        assert stats["in_collection"] == 2
         assert stats["retired"] == 1
+        assert stats["limited_edition"] == 1
+
+    def test_tag_counts_ignore_casing(self, auth_client, polish):
+        from catalog.models import Tag
+
+        polish.tags.add(Tag.objects.create(name="retired"))
+        assert auth_client.get("/about/").context["stats"]["retired"] == 1
 
     def test_breaks_down_by_colour_and_formula(self, auth_client, polish, other_polish):
         response = auth_client.get("/about/")
