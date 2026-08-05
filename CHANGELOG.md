@@ -1,3 +1,9 @@
+## v0.9.0 (2026-08-05)
+
+### Feat
+
+- **web**: drive About's Retired count by tag and add Limited edition
+
 ## v0.8.0 (2026-08-05)
 
 ### Feat
