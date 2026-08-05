@@ -279,6 +279,10 @@
     object-fit: cover;
     border-radius: 14px; // matches .hero-photo and the buttons
     scroll-snap-align: center;
+    // Without this, a fast flick's momentum can carry the scroll past several
+    // photos before it settles, landing at the first/last instead of the next
+    // one. `always` makes the browser stop at every snap point along the way.
+    scroll-snap-stop: always;
   }
 }
 
