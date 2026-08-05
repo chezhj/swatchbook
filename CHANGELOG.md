@@ -1,3 +1,10 @@
+## v0.9.1 (2026-08-05)
+
+### Fix
+
+- **web**: stop the photo carousel skipping past photos on a flick
+- **ci**: follow redirects in deploy smoke test
+
 ## v0.9.0 (2026-08-05)
 
 ### Feat
