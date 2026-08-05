@@ -200,7 +200,7 @@ jobs:
           smoke_url=$(ssh -i ~/.ssh/id_deploy -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" \
             "bash -lc 'cd ~/domains && source ${{ env.APP }}_config.sh && echo \$SMOKE_URL'")
           for attempt in 1 2 3 4 5 6; do
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "${smoke_url}" || echo 000)
+            code=$(curl -sSL -o /dev/null -w '%{http_code}' --max-time 20 "${smoke_url}" || echo 000)
             echo "attempt ${attempt}: HTTP ${code}"
             if [ "${code}" = "200" ]; then
               exit 0
