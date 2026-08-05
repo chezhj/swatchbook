@@ -6,3 +6,18 @@
 *.gif binary
 *.ico binary
 *.zip binary
+
+# Keep the GitHub Release "Source code" archives (git archive) free of
+# dev-only cruft. Does not affect the rsync deploy, which has its own
+# --exclude list in .github/workflows/release-deploy.yaml.
+/.github export-ignore
+/.vscode export-ignore
+/.claude export-ignore
+/doc export-ignore
+CLAUDE.md export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+.editorconfig export-ignore
+.pre-commit-config.yaml export-ignore
+.coveragerc export-ignore
+.env.example export-ignore
