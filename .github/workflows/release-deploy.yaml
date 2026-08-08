@@ -1,5 +1,15 @@
 name: Release & Deploy
 
+# SELF-CONTAINED deploy pipeline — copy this whole file into <app-repo>/.github/workflows/
+# and edit the marked per-repo values. It has no dependency on any workflow in another
+# repo, so it works even for repos you don't own / private repos across owners. The only
+# thing shared with www_installer is the activate.sh / rollback.sh scripts, which live on
+# the server in ~/deploy-tools (put there by www_installer's sync-tools.yml on release, and
+# clone-bootstrapped here if missing).
+#
+# Requires SSH_* secrets on THIS repo (Settings > Secrets and variables > Actions):
+#   SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, SSH_KNOWN_HOSTS, and optionally SSH_PORT.
+
 on:
   push:
     tags:
@@ -14,8 +24,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  APP: swatchbook # <- the <app> argument for activate.sh/rollback.sh
-  VERSION_FILE: config/__init__.py
+  APP: swatchbook # <-- EDIT: the <app> argument for activate.sh/rollback.sh
+  VERSION_FILE: config/__init__.py # <-- EDIT: file carrying __version__ = "X.Y.Z"
+  # URL of the deploy-tools repo cloned onto the server if not already present.
+  TOOLS_REPO: https://github.com/chezhj/www_installer
 
 jobs:
   test:
@@ -26,7 +38,7 @@ jobs:
 
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
+          python-version: "3.11" # <-- EDIT per app
 
       - name: Tag matches __version__
         run: |
@@ -45,14 +57,12 @@ jobs:
       - name: Run tests
         run: poetry run pytest
 
-      # Fail fast on a broken frontend build too, before a release is created.
-      # frontend/package-lock.json is the reproducibility guarantee here.
+      # Per-repo: drop this block if the app has no frontend build.
       - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
-
       - name: Build frontend
         working-directory: frontend
         run: |
@@ -86,26 +96,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      # Build once, here. The server never runs `poetry`, `npm`, or a compiler -
-      # it only ever receives a tree that's already complete.
+      # Build once, here. The server never runs poetry, npm, or a compiler.
       - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
-
       - name: Build frontend
         working-directory: frontend
         run: |
           npm ci
           npm run build
 
-      # Poetry 2.x dropped `export` as a built-in command - it's a separate
-      # plugin now. `poetry self add poetry-plugin-export` is known to
-      # silently fail to register on non-root runners (python-poetry/poetry
-      # issue #10341), which GitHub Actions runners are. Since Poetry itself
-      # is installed via plain `pip install` here (not the official
-      # installer/pipx), installing the plugin the same way avoids that bug.
       - name: Generate requirements.txt from the lockfile
         run: |
           pip install poetry poetry-plugin-export
@@ -124,13 +126,9 @@ jobs:
           printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-      # Ships the built tree straight into releases/<app>_<tag>/ on the
-      # server. No git clone, no deploy key on the server side. Adjust the
-      # exclude list per repo if there's more that shouldn't ship.
-      #
-      # This job touches nothing about the LIVE app - it only populates a
-      # brand new, inert releases/<app>_<tag>/ directory. Safe to run
-      # unattended every time.
+      # Ships the built tree into releases/<app>_<tag>/ on the server, and the app's own
+      # secret-free deploy config to ~/domains/<app>_config.sh. Touches nothing live.
+      # Per-repo: adjust the exclude list to match this repo's layout.
       - name: Ship release via rsync
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -155,20 +153,23 @@ jobs:
             --exclude 'tests' \
             --exclude 'frontend' \
             --exclude 'doc' \
+            --exclude 'deploy' \
             --exclude 'CLAUDE.md' \
             -e "ssh -i ~/.ssh/id_deploy -p ${SSH_PORT:-22}" \
-            ./ "${SSH_USER}@${SSH_HOST}:domains/releases/${{ env.APP }}_${GITHUB_REF_NAME}/"
+            ./ "${SSH_USER}@${SSH_HOST}:domains/releases/${APP}_${GITHUB_REF_NAME}/"
+
+          # Ship the deploy config (kept in this repo under deploy/<app>_config.sh).
+          rsync -az \
+            -e "ssh -i ~/.ssh/id_deploy -p ${SSH_PORT:-22}" \
+            "deploy/${APP}_config.sh" "${SSH_USER}@${SSH_HOST}:domains/${APP}_config.sh"
 
   activate:
     name: Activate on server
     needs: ship
     runs-on: ubuntu-latest
-    # Everything from here on touches the live app: pip install into the
-    # shared venv, migrate, symlink swap, restart. Add yourself as a required
-    # reviewer on this environment (Settings > Environments > production) to
-    # get a manual "Review deployment" pause right here - after ship has
-    # already put the files on the server, before anything is activated.
-    environment: production
+    # Everything from here touches the live app: pip install into the shared venv, migrate,
+    # move swap, restart. Add a `production` environment with a required reviewer here if
+    # you want a manual "Review deployment" pause before activation.
     steps:
       - name: Configure SSH
         run: |
@@ -178,6 +179,17 @@ jobs:
           printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
+      # Clone-if-missing so a fresh server works on first deploy. Version management is
+      # otherwise owned by www_installer's sync-tools.yml (no forced checkout here).
+      - name: Ensure deploy tools present
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          ssh -i ~/.ssh/id_deploy -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" \
+            "bash -lc 'test -d ~/deploy-tools/.git || git clone ${TOOLS_REPO} ~/deploy-tools; git -C ~/deploy-tools describe --tags --always'"
+
       - name: Activate on server
         id: activate
         env:
@@ -186,7 +198,7 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
           ssh -i ~/.ssh/id_deploy -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" \
-            "bash -lc 'cd ~/domains && ./activate.sh ${{ env.APP }} ${GITHUB_REF_NAME}'"
+            "bash -lc 'cd ~/domains && ~/deploy-tools/scripts/activate.sh ${APP} ${GITHUB_REF_NAME}'"
 
       - name: Smoke test
         id: smoke
@@ -195,10 +207,13 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
-          # Read SMOKE_URL out of the app's own config rather than duplicating
-          # it in the workflow.
+          # Read SMOKE_URL out of the app's own config rather than duplicating it here.
           smoke_url=$(ssh -i ~/.ssh/id_deploy -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" \
-            "bash -lc 'cd ~/domains && source ${{ env.APP }}_config.sh && echo \$SMOKE_URL'")
+            "bash -lc 'cd ~/domains && source ${APP}_config.sh && echo \$SMOKE_URL'")
+          if [ -z "${smoke_url}" ]; then
+            echo "::error::SMOKE_URL is not set in ${APP}_config.sh"
+            exit 1
+          fi
           for attempt in 1 2 3 4 5 6; do
             code=$(curl -sSL -o /dev/null -w '%{http_code}' --max-time 20 "${smoke_url}" || echo 000)
             echo "attempt ${attempt}: HTTP ${code}"
@@ -220,7 +235,7 @@ jobs:
           echo "::warning::Deploy failed - rolling back code (database is left untouched)"
           set +e
           output=$(ssh -i ~/.ssh/id_deploy -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" \
-            "bash -lc 'cd ~/domains && ./rollback.sh ${{ env.APP }}'" 2>&1)
+            "bash -lc 'cd ~/domains && ~/deploy-tools/scripts/rollback.sh ${APP}'" 2>&1)
           rollback_status=$?
           set -e
           echo "$output"
@@ -234,7 +249,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           if echo "$output" | grep -q "MIGRATION_MAY_HAVE_RUN"; then
-            echo "::warning::Code rolled back. Migrations may have run against the live database - it was NOT restored automatically. SSH in and run ./rollback.sh ${{ env.APP }} --restore-db if you want to revert the data too (this discards writes made since the migration)."
+            echo "::warning::Code rolled back. Migrations may have run against the live database - it was NOT restored automatically. SSH in and run 'cd ~/domains && ~/deploy-tools/scripts/rollback.sh ${APP} --restore-db' to revert the data too (this discards writes made since the migration)."
           fi
 
           exit "$rollback_status"
