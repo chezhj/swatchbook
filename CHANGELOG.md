@@ -1,3 +1,9 @@
+## v0.11.0 (2026-08-09)
+
+### Feat
+
+- **web**: make Swatchbook an installable PWA with offline support
+
 ## v0.10.0 (2026-08-09)
 
 ### Feat
