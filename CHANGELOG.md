@@ -1,3 +1,9 @@
+## v0.10.0 (2026-08-09)
+
+### Feat
+
+- **web**: enlarge compare bottles to fill their column
+
 ## v0.9.1 (2026-08-05)
 
 ### Fix
