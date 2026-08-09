@@ -30,3 +30,14 @@ Alpine.data('releaseDate', releaseDate);
 
 window.Alpine = Alpine;
 Alpine.start();
+
+// Register the service worker (web/templates/web/sw.js, served at /sw.js). Only from a
+// real build — under `npm run dev` import.meta.env.DEV is true and a caching SW would
+// just fight Vite's HMR. sw.js itself lives at the root so its scope is the whole app.
+if ('serviceWorker' in navigator && !import.meta.env.DEV) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.error('Service worker registration failed:', err);
+    });
+  });
+}

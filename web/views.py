@@ -366,6 +366,42 @@ class AboutView(TemplateView):
 
 
 @method_decorator(login_not_required, name="dispatch")
+class ManifestView(TemplateView):
+    """Web app manifest, rendered so the icon URLs carry the prod static hash.
+
+    Reachable without a session (the browser fetches it to decide installability)
+    and served with the manifest media type so the ``<link rel="manifest">`` is honoured.
+    """
+
+    template_name = "web/site.webmanifest"
+    content_type = "application/manifest+json"
+
+
+@method_decorator(login_not_required, name="dispatch")
+class ServiceWorkerView(TemplateView):
+    """The service worker, served from the site root so its scope is the whole app.
+
+    Rendered rather than shipped as a static file: it stamps the cache name with the
+    deployed version and precaches hash-named static assets (see the template).
+    """
+
+    template_name = "web/sw.js"
+    content_type = "application/javascript"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["version"] = config.__version__
+        return context
+
+
+@method_decorator(login_not_required, name="dispatch")
+class OfflineView(TemplateView):
+    """Static fallback the service worker returns when a navigation can't reach the net."""
+
+    template_name = "web/offline.html"
+
+
+@method_decorator(login_not_required, name="dispatch")
 class DevLoginView(View):
     """Dev-only shortcut: log in as a throwaway "dev" user without a password.
 

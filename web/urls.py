@@ -29,6 +29,12 @@ urlpatterns = [
     path("log/<int:pk>/delete/", views.LogEntryDeleteView.as_view(), name="log_delete"),
     path("random/", views.RandomizerView.as_view(), name="randomizer"),
     path("about/", views.AboutView.as_view(), name="about"),
+    # PWA plumbing. site.webmanifest and sw.js sit at the root on purpose: the SW's
+    # scope is its own URL's directory, so a root sw.js controls the whole app without
+    # a Service-Worker-Allowed header.
+    path("site.webmanifest", views.ManifestView.as_view(), name="manifest"),
+    path("sw.js", views.ServiceWorkerView.as_view(), name="service_worker"),
+    path("offline/", views.OfflineView.as_view(), name="offline"),
     path(
         "login/",
         auth_views.LoginView.as_view(template_name="registration/login.html"),

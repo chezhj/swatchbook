@@ -1,0 +1,16 @@
+{% load static %}{
+  "name": "Swatchbook",
+  "short_name": "Swatchbook",
+  "description": "Personal nail polish catalog and wear log.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#15131b",
+  "theme_color": "#15131b",
+  "icons": [
+    { "src": "{% static 'icons/icon-192.png' %}", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "{% static 'icons/icon-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "{% static 'icons/icon-maskable-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

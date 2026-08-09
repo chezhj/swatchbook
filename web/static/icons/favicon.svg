@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Swatchbook">
+  <defs>
+    <linearGradient id="holo" gradientUnits="userSpaceOnUse" x1="12" y1="6" x2="54" y2="58">
+      <stop offset="0" stop-color="#6fe7dd"/>
+      <stop offset="0.5" stop-color="#e893d0"/>
+      <stop offset="1" stop-color="#f5d77a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ink tile, 22% corner radius to match the app's swatch shape -->
+  <rect width="64" height="64" rx="14" fill="#15131b"/>
+
+  <!-- polish bottle: cap + neck + a body that is literally a Swatchbook swatch -->
+  <rect x="24.5" y="8" width="15" height="13" rx="3.5" fill="url(#holo)"/>
+  <rect x="28.5" y="19.5" width="7" height="6" fill="url(#holo)"/>
+  <rect x="16" y="24" width="32" height="32" rx="7" fill="url(#holo)"/>
+</svg>

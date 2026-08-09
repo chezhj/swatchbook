@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% comment %}
+Served at /offline/ and precached by the service worker. It's the fallback the SW
+returns for a navigation when the network is unreachable, so it must render on its
+own — it can't assume any live data. login_not_required, since an offline device
+has no session to check anyway. Styling is inline: the CSP allows inline style
+attributes but not inline scripts, and this page can't depend on the bundle having
+been cached, so "Try again" is a plain link (reloads /) rather than an onclick.
+{% endcomment %}
+
+{% block title %}Offline · Swatchbook{% endblock %}
+
+{% block content %}
+<section style="max-width: 32rem; margin: 4rem auto; text-align: center;">
+  <img src="{% static 'icons/favicon.svg' %}" alt="" width="72" height="72" style="opacity: .9;">
+  <h1>You're offline</h1>
+  <p>Swatchbook can't reach the network right now. Pages you've already opened are
+     still available; anything new will load once you're back online.</p>
+  <p><a href="/">Try again</a></p>
+</section>
+{% endblock %}
+
+{% block nav %}{% endblock %}
