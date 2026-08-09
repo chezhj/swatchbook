@@ -392,8 +392,9 @@
 }
 
 .bottle {
-  width: 100px;
-  height: 136px;
+  width: 100%;
+  max-width: 220px; // fills the column on mobile, capped on wide desktop
+  aspect-ratio: 100 / 136;
   border-radius: 8px 8px 4px 4px;
   position: relative;
   margin-top: 12px;
