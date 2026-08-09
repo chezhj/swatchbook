@@ -137,7 +137,7 @@
 
 // The compare screen's bottle is a swatch in a bottle silhouette, not a square tile.
 .swatch.bottle {
-  aspect-ratio: auto;
+  aspect-ratio: 100 / 136;
   border-radius: 8px 8px 4px 4px;
 }
 
